@@ -59,10 +59,35 @@ int main(int argc, char** argv)
             {
                 for(auto p: o->get_properties())
                 {
-                    std::cout << "  " << p.first << ": " << "value" << std::endl;
-                    // TODO: implement value for C++ usage.
+                  void * val = p.second->value;
+                  TDMS::data_type_t valtype = p.second->data_type;
+
+                  if( valtype.name == "tdsTypeString"){
+                    std::string a = *((std::string*) val);
+                    std::cout << "  " << p.first << ": " << a << std::endl;
+                  }
+                  else if( valtype.name == "tdsTypeDoubleFloat"){
+                    double dbl = *((double*) val);
+                    std::cout << "  " << p.first << ": " << dbl << std::endl;
+                  }
+                  else if( valtype.name == "tdsTypeTimeStamp" ){
+                    time_t timer = *((time_t*) val);
+                    tm * pt = gmtime(&timer);
+
+                  	char buffer[80];
+                  	sprintf(buffer, "%d.%02d.%d %02d:%02d:%02d,%f",
+                    pt->tm_mday, pt->tm_mon + 1, 1900 + pt->tm_year, pt->tm_hour, pt->tm_min, pt->tm_sec, 0.0);
+                    std::cout << "  " << p.first << ": " << buffer << std::endl;
+                  }
+                  else{
+                    std::cout << "  " << p.first << ": " << valtype.name << std::endl;
+                  }
                 }
             }
+
+            std::cout<<o->number_values()<<" values present ("
+                <<o->bytes()<<")"
+                <<std::endl;
         }
     }
 }

@@ -441,6 +441,9 @@ const unsigned char* segment_object::_parse_metadata(const unsigned char* data)
             {
                 throw std::runtime_error("Unsupported datatype " + prop_data_type.name);
             }
+
+            log::debug << "Property " << prop_name << " has been read (not a string)" << log::endl;
+
             data += prop_data_type.length;
             _tdms_object->_properties.emplace(prop_name, 
                 std::shared_ptr<object::property>(
