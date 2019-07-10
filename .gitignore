@@ -1,3 +1,13 @@
 *.swp
 build
 build/*
+/CMakeCache.txt
+/cmake_install.cmake
+/CMakeFiles/
+/src/CMakeFiles/
+/src/cmake_install.cmake
+/src/Makefile
+/tests/tdmsppinfo
+/tests/CMakeFiles/
+/tests/Makefile
+/tests/cmake_install.cmake

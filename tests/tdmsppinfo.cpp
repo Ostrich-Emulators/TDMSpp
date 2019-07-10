@@ -29,10 +29,12 @@ public:
 
     std::vector<double> vals;
     vals.reserve( num_vals );
+    vals.resize( num_vals );
     std::copy( datablock, datablock + ( num_vals * sizeof (double ) ), vals.begin( ) );
 
+    size_t cnt = 0;
     for ( auto x : vals ) {
-      std::cout << channelname << " val: " << x << std::endl;
+      std::cout << "\tval " << ( cnt++ ) << ": " << x << std::endl;
     }
   }
 };
@@ -65,6 +67,7 @@ int main( int argc, char** argv ) {
     if ( _filenames.size( ) > 1 )
       std::cout << filename << ":" << std::endl;
     TDMS::file f( filename );
+    std::cout << f.segments( ) << " segments parsed" << std::endl;
 
     for ( TDMS::object* o : f ) {
       std::cout << o->get_path( ) << std::endl;
@@ -102,7 +105,8 @@ int main( int argc, char** argv ) {
     }
 
     l listener;
-    for ( size_t i = 0; i < 5; i++ ) {
+    for ( size_t i = 0; i < 20; i++ ) {
+      std::cout << "loading segment " << i << std::endl;
       f.loadSegment( i, &listener );
     }
   }

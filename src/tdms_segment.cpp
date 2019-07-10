@@ -13,7 +13,7 @@
 
 namespace TDMS{
 
-  const std::map<const std::string, int32_t> segment::_toc_properties ={
+  const std::map<const std::string, int32_t> segment::_toc_properties = {
     {"kTocMetaData", int32_t( 1 ) << 1 },
     {"kTocRawData", int32_t( 1 ) << 3 },
     {"kTocDAQmxRawData", int32_t( 1 ) << 7 },
@@ -67,35 +67,30 @@ namespace TDMS{
     {0xFFFFFFFF, data_type_t( "tdsTypeDAQmxRawData", 0, not_implemented ) }
   };
 
-  segment::segment( FILE* f, size_t segment_start,
-      segment* previous_segment,
-      file* file )
-  : _parent_file( file ), _start( segment_start ) {
-    size_t pos = segment_start;
-    fseek( f, pos, SEEK_SET );
+  segment::segment( uulong segment_start, segment* previous_segment, file* file )
+  : _parent_file( file ), _startpos_in_file( segment_start ) {
+
+    fseek( file->f, segment_start, SEEK_SET );
 
     unsigned char justread[8]; // biggest element we'll read here
-    size_t read = fread( justread, sizeof ( char ), 4, f );
+    fread( justread, sizeof ( char ), 4, file->f );
 
     const char* header = "TDSm";
     if ( memcmp( justread, header, 4 ) != 0 ) {
       throw segment::no_segment_error( );
     }
-    pos += 4;
 
     // First four bytes are toc mask
-    fread( justread, sizeof ( char ), 4, f );
+    fread( justread, sizeof ( char ), 4, file->f );
     int32_t toc_mask = read_le<int32_t>( (const unsigned char *) &justread[0] );
 
     for ( auto prop : segment::_toc_properties ) {
       _toc[prop.first] = ( toc_mask & prop.second ) != 0;
-      log::debug << "Property " << prop.first << " is "
-          << _toc[prop.first] << log::endl;
+      log::debug << "Property " << prop.first << " is " << _toc[prop.first] << log::endl;
     }
-    pos += 4;
 
     // Four bytes for version number
-    fread( justread, sizeof ( char ), 4, f );
+    fread( justread, sizeof ( char ), 4, file->f );
     int32_t version = read_le<int32_t>( (const unsigned char *) &justread[0] );
     log::debug << "Version: " << version << log::endl;
     switch ( version ) {
@@ -106,37 +101,33 @@ namespace TDMS{
         std::cerr << "segment: unknown version number " << version << std::endl;
         break;
     }
-    pos += 4;
 
     // 64 bits pointer to next segment
     // and same for raw data offset
-    fread( justread, sizeof ( char ), 8, f );
+    fread( justread, sizeof ( char ), 8, file->f );
     uint64_t next_segment_offset = read_le<uint64_t>( (const unsigned char *) &justread[0] );
-    pos += 8;
-    fread( justread, sizeof ( char ), 8, f );
+    fread( justread, sizeof ( char ), 8, file->f );
     uint64_t raw_data_offset = read_le<uint64_t>( (const unsigned char *) &justread[0] );
-    pos += 8;
 
-    this->_data_start = pos + raw_data_offset; // absolute location of data
-    //this->_data = pos + raw_data_offset; // Remember location of the data
+    // we'll add 4+4+4+8+8 = 28 bytes to our offsets
+    // because we've read 28 bytes from the start of the segment
+    this->_data_offset = raw_data_offset + 28; // bytes from start of the segment to data
 
-    if ( next_segment_offset == 0xFFFFFFFFFFFFFFFF ) // That's 8 times FF, or 16 F's, aka
-      // the maximum unsigned int64_t.
-    {
+    if ( next_segment_offset == 0xFFFFFFFFFFFFFFFF ){ // That's 8 times FF, or 16 F's, aka the maximum unsigned int64_t.
       throw std::runtime_error( "Labview probably crashed, file is corrupt. Not attempting to read." );
     }
-    this->_next_segment_offset = next_segment_offset + 7 * 4;
-    this->_raw_data_offset = raw_data_offset + 7 * 4;
+    this->_next_segment_offset = next_segment_offset + 28;
 
-
+    // prepare enough space to load the metadata into memory
     unsigned char * segment_metadata = (unsigned char*) malloc( raw_data_offset );
-    fread( segment_metadata, raw_data_offset, 1, f );
+    // read the metadata into memory (the file stream is currently pointing to
+    // the start of the metadata)
+    fread( segment_metadata, raw_data_offset, 1, file->f );
     _parse_metadata( segment_metadata, previous_segment );
     free( segment_metadata );
   }
 
-  void segment::_parse_metadata( const unsigned char* data,
-      segment* previous_segment ) {
+  void segment::_parse_metadata( const unsigned char* data, segment* previous_segment ) {
     if ( !this->_toc["kTocMetaData"] ) {
       if ( previous_segment == nullptr )
         throw std::runtime_error( "kTocMetaData is set for segment, but"
@@ -228,7 +219,7 @@ namespace TDMS{
           }
         }
     );
-    long long total_data_size = this->_next_segment_offset - this->_raw_data_offset;
+    long long total_data_size = this->_next_segment_offset - this->_data_offset;
 
     if ( data_size < 0 || total_data_size < 0 ) {
       throw std::runtime_error( "Negative data size" );
@@ -262,7 +253,7 @@ namespace TDMS{
   void segment::_parse_raw_data( listener * listener ) {
     if ( !this->_toc["kTocRawData"] )
       return;
-    size_t total_data_size = _next_segment_offset - _raw_data_offset;
+    size_t total_data_size = _next_segment_offset - _data_offset;
 
     endianness e = LITTLE;
     if ( this->_toc["kTocBigEndian"] ) {
@@ -270,7 +261,7 @@ namespace TDMS{
       e = BIG;
     }
 
-    fseek( _parent_file->f, _data_start, SEEK_SET );
+    fseek( _parent_file->f, _startpos_in_file + _data_offset, SEEK_SET );
     unsigned char * data = (unsigned char *) malloc( total_data_size );
     fread( data, total_data_size, 1, _parent_file->f );
     const unsigned char * d = data;
@@ -307,8 +298,8 @@ namespace TDMS{
       //_tdms_object->_data_insert_position += (_number_values*_data_type.ctype_length);
       //data += (_number_values*_data_type.ctype_length);
       //std::cout << "reading " << _number_values << " values (not really :) for " << _tdms_object->_path << std::endl;
-      if( nullptr != earful){
-        earful->data(_tdms_object->_path, data, _data_type, _number_values);
+      if ( nullptr != earful ) {
+        earful->data( _tdms_object->_path, data, _data_type, _number_values );
       }
     }
   }
@@ -383,7 +374,7 @@ namespace TDMS{
       else {
         _data_size = ( _number_values * _dimension * _data_type.length );
       }
-      log::debug << "Number of elements in segment: " << _number_values << log::endl;
+      log::debug << "Number of elements in segment for " << _tdms_object->_path<<": "<< _number_values << log::endl;
     }
     // Read data properties
     uint32_t num_properties = read_le<uint32_t>( data );

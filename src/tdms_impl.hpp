@@ -9,6 +9,8 @@
 namespace TDMS
 {
 
+  typedef unsigned long long uulong;
+
 class file;
 class object;
 class channel;
@@ -36,9 +38,7 @@ private:
     };
     typedef channel object;
 
-    segment( FILE * f, size_t segment_start,
-            segment* previous_segment,
-            file* file);
+    segment( uulong segment_start, segment* previous_segment, file* file);
     virtual ~segment();
 
     void _parse_metadata(const unsigned char* data, 
@@ -55,10 +55,10 @@ private:
     std::map<std::string, bool> _toc;
     //const unsigned char* _data;
     size_t _next_segment_offset;
-    size_t _raw_data_offset;
+    //size_t _raw_data_offset;
     size_t _num_chunks;
-		uint64_t _start;
-		uint64_t _data_start;
+		uulong _startpos_in_file;
+		uint64_t _data_offset; // bytes of data between _startpos and the raw data
     std::vector<std::shared_ptr<segment::object>> _ordered_objects;
 
     file* _parent_file;

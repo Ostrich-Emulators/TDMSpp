@@ -9,6 +9,7 @@
 #include "tdms_impl.hpp"
 
 namespace TDMS{
+  typedef unsigned long long uulong;
 
   file::file( const std::string& filename ) : filename( filename ) {
     f = fopen( filename.c_str( ), "r" );
@@ -25,12 +26,14 @@ namespace TDMS{
   }
 
   void file::_parse_segments( FILE * f ) {
-    size_t offset = 0;
+    file_pos_t offset = 0;
     segment* prev = nullptr;
     // First read the metadata of the segments
+    size_t count = 0;
     while ( offset < file_contents_size - 8 * 4 ) {
       try {
-        segment* s = new segment( f, offset, prev, this );
+        log::debug << "parsing segment " << ( count++ ) << " from offset: " << offset << log::endl;
+        segment* s = new segment( offset, prev, this );
         offset += s->_next_segment_offset;
         _segments.push_back( s );
         prev = s;

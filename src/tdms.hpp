@@ -132,8 +132,7 @@ namespace TDMS {
 		}
 	private:
 
-		object( const std::string& path )
-		: _path( path ) {
+		object( const std::string& path ) : _path( path ) {
 			//        _data = nullptr;
 			_number_values = 0;
 			_data_insert_position = 0;
