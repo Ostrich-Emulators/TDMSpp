@@ -11,7 +11,8 @@ namespace TDMS
 
 class file;
 class object;
-class segment_object;
+class channel;
+class listener;
 
 enum endianness
 {
@@ -23,7 +24,7 @@ class segment
 {
     friend class file;
     friend class object;
-    friend class segment_object;
+    friend class channel;
 private:
     class no_segment_error : public std::runtime_error
     {
@@ -33,19 +34,18 @@ private:
         {
         }
     };
-    typedef segment_object object;
+    typedef channel object;
 
-    segment(const unsigned char* file_contents, 
+    segment( FILE * f, size_t segment_start,
             segment* previous_segment,
             file* file);
     virtual ~segment();
 
     void _parse_metadata(const unsigned char* data, 
             segment* previous_segment);
-    void _parse_raw_data();
+    void _parse_raw_data( listener * = nullptr );
     void _calculate_chunks();
 
-    size_t _offset;
     size_t _chunk_count;
 
     // Probably a map using enums performs faster.
@@ -53,10 +53,12 @@ private:
     // Perhaps use a struct for the _toc, so we don't need
     // the std::map and don't have to do lookups.
     std::map<std::string, bool> _toc;
-    const unsigned char* _data;
+    //const unsigned char* _data;
     size_t _next_segment_offset;
     size_t _raw_data_offset;
     size_t _num_chunks;
+		uint64_t _start;
+		uint64_t _data_start;
     std::vector<std::shared_ptr<segment::object>> _ordered_objects;
 
     file* _parent_file;
@@ -64,14 +66,14 @@ private:
     static const std::map<const std::string, int32_t> _toc_properties;
 };
 
-class segment_object
+class channel
 {
     friend class segment;
     friend class object;
 private:
-    segment_object(object* o);
+    channel(object* o);
     const unsigned char* _parse_metadata(const unsigned char* data);
-    void _read_values(const unsigned char*& data, endianness e);
+    void _read_values(const unsigned char*& data, endianness e, listener * );
     object* _tdms_object;
 
     uint64_t _number_values;
@@ -79,6 +81,5 @@ private:
     bool _has_data;
     uint32_t _dimension;
     data_type_t _data_type;
-    //_dimension;
 };
 }
