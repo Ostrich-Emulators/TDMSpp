@@ -26,7 +26,7 @@ namespace TDMS{
   }
 
   void file::_parse_segments( FILE * f ) {
-    file_pos_t offset = 0;
+    uulong offset = 0;
     segment* prev = nullptr;
     // First read the metadata of the segments
     size_t count = 0;

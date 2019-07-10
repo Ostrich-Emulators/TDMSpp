@@ -112,8 +112,10 @@ namespace TDMS{
     // we'll add 4+4+4+8+8 = 28 bytes to our offsets
     // because we've read 28 bytes from the start of the segment
     this->_data_offset = raw_data_offset + 28; // bytes from start of the segment to data
+    log::debug << "raw data starts " << _data_offset << " bytes after the start of segment" << log::endl;
 
-    if ( next_segment_offset == 0xFFFFFFFFFFFFFFFF ){ // That's 8 times FF, or 16 F's, aka the maximum unsigned int64_t.
+
+    if ( next_segment_offset == 0xFFFFFFFFFFFFFFFF ) { // That's 8 times FF, or 16 F's, aka the maximum unsigned int64_t.
       throw std::runtime_error( "Labview probably crashed, file is corrupt. Not attempting to read." );
     }
     this->_next_segment_offset = next_segment_offset + 28;
@@ -260,10 +262,11 @@ namespace TDMS{
       throw std::runtime_error( "Big endian reading not yet implemented" );
       e = BIG;
     }
-
-    fseek( _parent_file->f, _startpos_in_file + _data_offset, SEEK_SET );
+    fseek( _parent_file->f, _startpos_in_file, SEEK_SET );
+    fseek( _parent_file->f, _data_offset, SEEK_CUR );
+    log::debug << "file pointer is at pos: " << ftell( _parent_file->f ) << log::endl;
     unsigned char * data = (unsigned char *) malloc( total_data_size );
-    fread( data, total_data_size, 1, _parent_file->f );
+    size_t read = fread( data, sizeof(unsigned char *), total_data_size, _parent_file->f );
     const unsigned char * d = data;
 
     for ( size_t chunk = 0; chunk < _num_chunks; ++chunk ) {
@@ -374,7 +377,7 @@ namespace TDMS{
       else {
         _data_size = ( _number_values * _dimension * _data_type.length );
       }
-      log::debug << "Number of elements in segment for " << _tdms_object->_path<<": "<< _number_values << log::endl;
+      log::debug << "Number of elements in segment for " << _tdms_object->_path << ": " << _number_values << log::endl;
     }
     // Read data properties
     uint32_t num_properties = read_le<uint32_t>( data );

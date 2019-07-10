@@ -29,13 +29,13 @@ public:
 
     std::vector<double> vals;
     vals.reserve( num_vals );
-    vals.resize( num_vals );
-    std::copy( datablock, datablock + ( num_vals * sizeof (double ) ), vals.begin( ) );
 
-    size_t cnt = 0;
-    for ( auto x : vals ) {
-      std::cout << "\tval " << ( cnt++ ) << ": " << x << std::endl;
+    memcpy(&vals[0], datablock, datatype.length * num_vals );
+    std::cout << "\t";
+    for ( size_t i = 0; i < num_vals; i++ ) {
+      std::cout << vals[i] << " ";
     }
+    std::cout << std::endl;
   }
 };
 
