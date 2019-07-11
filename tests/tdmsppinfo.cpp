@@ -30,9 +30,21 @@ public:
     std::vector<double> vals;
     vals.reserve( num_vals );
 
-    memcpy(&vals[0], datablock, datatype.length * num_vals );
-    std::cout << "\t";
-    for ( size_t i = 0; i < num_vals; i++ ) {
+//    std::cout << "\t";
+//    for( size_t i=0; i< num_vals; i++ ){
+//      double out;
+//      memcpy(&out, datablock+(i*datatype.length), datatype.length);
+//      //vals.push_back(out);
+//
+//      if( i< 50 ){
+//        std::cout << out << " ";
+//      }
+//
+//    }
+
+    memcpy( &vals[0], datablock, datatype.length * num_vals );
+    const size_t lim = num_vals > 50 ? 50 : num_vals;
+    for ( size_t i = 0; i < lim; i++ ) {
       std::cout << vals[i] << " ";
     }
     std::cout << std::endl;
@@ -105,7 +117,7 @@ int main( int argc, char** argv ) {
     }
 
     l listener;
-    for ( size_t i = 0; i < 20; i++ ) {
+    for ( size_t i = 0; i < f.segments(); i++ ) {
       std::cout << "loading segment " << i << std::endl;
       f.loadSegment( i, &listener );
     }

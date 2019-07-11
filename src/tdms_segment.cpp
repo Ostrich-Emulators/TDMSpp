@@ -266,7 +266,7 @@ namespace TDMS{
     fseek( _parent_file->f, _data_offset, SEEK_CUR );
     log::debug << "file pointer is at pos: " << ftell( _parent_file->f ) << log::endl;
     unsigned char * data = (unsigned char *) malloc( total_data_size );
-    size_t read = fread( data, sizeof(unsigned char *), total_data_size, _parent_file->f );
+    fread( data, total_data_size, 1, _parent_file->f );
     const unsigned char * d = data;
 
     for ( size_t chunk = 0; chunk < _num_chunks; ++chunk ) {
@@ -279,6 +279,7 @@ namespace TDMS{
         for ( auto obj : _ordered_objects ) {
           if ( obj->_has_data ) {
             obj->_read_values( d, e, listener );
+            log::debug << "returned" << log::endl;
           }
         }
       }
