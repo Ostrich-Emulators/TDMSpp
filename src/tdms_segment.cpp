@@ -272,14 +272,14 @@ namespace TDMS{
     for ( size_t chunk = 0; chunk < _num_chunks; ++chunk ) {
       if ( this->_toc["kTocInterleavedData"] ) {
         log::debug << "Data is interleaved" << log::endl;
-        throw std::runtime_error( "Reading inteleaved data not supported yet" );
+        throw std::runtime_error( "Reading interleaved data not supported yet" );
       }
       else {
         log::debug << "Data is contiguous" << log::endl;
         for ( auto obj : _ordered_objects ) {
           if ( obj->_has_data ) {
-            obj->_read_values( d, e, listener );
-            log::debug << "returned" << log::endl;
+            size_t bytes_processed = obj->_read_values( d, e, listener );
+            d += bytes_processed;
           }
         }
       }
@@ -288,24 +288,25 @@ namespace TDMS{
     free( data );
   }
 
-  void channel::_read_values( const unsigned char*& data, endianness e, listener * earful ) {
+  size_t channel::_read_values( const unsigned char*& data, endianness e, listener * earful ) {
     if ( _data_type.name == "tdsTypeString" ) {
       log::debug << "Reading string data" << log::endl;
       throw std::runtime_error( "Reading string data not yet implemented" );
       // TODO ^
     }
-    else {
-      //unsigned char* read_data = ()(_tdms_object->_data_start + _tdms_object->_data_insert_position);
 
-      //_data_type.read_array_to(data, read_data, _number_values);
+    //unsigned char* read_data = ()(_tdms_object->_data_start + _tdms_object->_data_insert_position);
 
-      //_tdms_object->_data_insert_position += (_number_values*_data_type.ctype_length);
-      //data += (_number_values*_data_type.ctype_length);
-      //std::cout << "reading " << _number_values << " values (not really :) for " << _tdms_object->_path << std::endl;
-      if ( nullptr != earful ) {
-        earful->data( _tdms_object->_path, data, _data_type, _number_values );
-      }
+    //_data_type.read_array_to(data, read_data, _number_values);
+
+    //_tdms_object->_data_insert_position += (_number_values*_data_type.ctype_length);
+    //data += (_number_values*_data_type.ctype_length);
+    //std::cout << "reading " << _number_values << " values (not really :) for " << _tdms_object->_path << std::endl;
+    if ( nullptr != earful ) {
+      earful->data( _tdms_object->_path, data, _data_type, _number_values );
     }
+
+    return _number_values * _data_type.ctype_length;
   }
 
   segment::~segment( ) {

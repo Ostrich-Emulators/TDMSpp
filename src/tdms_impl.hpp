@@ -73,7 +73,7 @@ class channel
 private:
     channel(object* o);
     const unsigned char* _parse_metadata(const unsigned char* data);
-    void _read_values(const unsigned char*& data, endianness e, listener * );
+    size_t _read_values(const unsigned char*& data, endianness e, listener * );
     object* _tdms_object;
 
     uint64_t _number_values;
