@@ -405,12 +405,11 @@ namespace TDMS{
           throw std::runtime_error( "Unsupported datatype " + prop_data_type.name );
         }
 
-        log::debug << "Property " << prop_name << " has been read (not a string)" << log::endl;
-
         data += prop_data_type.length;
         _tdms_object->_properties.emplace( prop_name,
             std::shared_ptr<object::property>(
             new object::property( prop_data_type, prop_val ) ) );
+        log::debug << "Property " << prop_name << " has been read (" << prop_data_type.name << ")" << log::endl;
       }
     }
 

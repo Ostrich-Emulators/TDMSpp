@@ -3,6 +3,7 @@
 
 #include <tdms.hpp>
 #include <log.hpp>
+#include <iomanip>
 
 #include "optionparser.h"
 
@@ -25,29 +26,29 @@ class l : public TDMS::listener{
 public:
 
   virtual void data( const std::string& channelname, const unsigned char* datablock, TDMS::data_type_t datatype, size_t num_vals ) override {
-    std::cout << "reading " << num_vals << " for channel: " << channelname << std::endl;
+    //std::cout << "reading " << num_vals << " for channel: " << channelname << std::endl;
 
     std::vector<double> vals;
     vals.reserve( num_vals );
 
-//    std::cout << "\t";
-//    for( size_t i=0; i< num_vals; i++ ){
-//      double out;
-//      memcpy(&out, datablock+(i*datatype.length), datatype.length);
-//      //vals.push_back(out);
-//
-//      if( i< 50 ){
-//        std::cout << out << " ";
-//      }
-//
-//    }
+    //    std::cout << "\t";
+    //    for( size_t i=0; i< num_vals; i++ ){
+    //      double out;
+    //      memcpy(&out, datablock+(i*datatype.length), datatype.length);
+    //      //vals.push_back(out);
+    //
+    //      if( i< 50 ){
+    //        std::cout << out << " ";
+    //      }
+    //
+    //    }
 
     memcpy( &vals[0], datablock, datatype.length * num_vals );
-    const size_t lim = num_vals > 50 ? 50 : num_vals;
-    for ( size_t i = 0; i < lim; i++ ) {
-      std::cout << vals[i] << " ";
-    }
-    std::cout << std::endl;
+    //    if ( "/'Intellivue'/'CmpndECG(I)'" == channelname ) {
+    //      for ( size_t i = 0; i < num_vals; i++ ) {
+    //        std::cout << std::setprecision( 4 ) << std::fixed << vals[i] << std::endl;
+    //      }
+    //    }
   }
 };
 
@@ -85,28 +86,25 @@ int main( int argc, char** argv ) {
       std::cout << o->get_path( ) << std::endl;
       if ( options[PROPERTIES] ) {
         for ( auto p : o->get_properties( ) ) {
-          void * val = p.second->value;
           TDMS::data_type_t valtype = p.second->data_type;
 
           if ( valtype.name == "tdsTypeString" ) {
-            std::string a = *( ( std::string* ) val );
-            std::cout << "  " << p.first << ": " << a << std::endl;
+            std::cout << "  " << p.first << " (string): " << p.second->asString( ) << std::endl;
           }
           else if ( valtype.name == "tdsTypeDoubleFloat" ) {
-            double dbl = *( (double*) val );
-            std::cout << "  " << p.first << ": " << dbl << std::endl;
+            std::cout << "  " << p.first << " (double): " << p.second->asDouble( ) << std::endl;
           }
           else if ( valtype.name == "tdsTypeTimeStamp" ) {
-            time_t timer = *( (time_t*) val );
+            time_t timer = p.second->asUTCTimestamp( );
             tm * pt = gmtime( &timer );
 
             char buffer[80];
             sprintf( buffer, "%d.%02d.%d %02d:%02d:%02d,%f",
                 pt->tm_mday, pt->tm_mon + 1, 1900 + pt->tm_year, pt->tm_hour, pt->tm_min, pt->tm_sec, 0.0 );
-            std::cout << "  " << p.first << ": " << buffer << std::endl;
+            std::cout << "  " << p.first << " (timestamp): " << buffer << std::endl;
           }
           else {
-            std::cout << "  " << p.first << ": " << valtype.name << std::endl;
+            std::cout << "  " << p.first << "(" << valtype.name << "): <unhandled>" << std::endl;
           }
         }
       }
@@ -117,8 +115,8 @@ int main( int argc, char** argv ) {
     }
 
     l listener;
-    for ( size_t i = 0; i < f.segments(); i++ ) {
-      std::cout << "loading segment " << i << std::endl;
+    for ( size_t i = 0; i < f.segments( ); i++ ) {
+      //std::cout << "loading segment " << i << std::endl;
       f.loadSegment( i, &listener );
     }
   }

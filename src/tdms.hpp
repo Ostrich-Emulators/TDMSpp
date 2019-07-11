@@ -109,6 +109,22 @@ namespace TDMS {
 			const data_type_t data_type;
 			void* value;
 			virtual ~property( );
+
+			double asDouble() const {
+				return *( (double*) value );
+			}
+
+			int asInt() const {
+				return *( (int*) value );
+			}
+
+			const std::string& asString() const {
+				return *( ( std::string* ) value );
+			}
+
+			time_t asUTCTimestamp() const {
+				return *( (time_t*) value );
+			}
 		};
 
 		const std::string data_type( ) {
