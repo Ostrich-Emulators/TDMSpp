@@ -6,8 +6,13 @@ build/*
 /CMakeFiles/
 /src/CMakeFiles/
 /src/cmake_install.cmake
+/src/libtdmspp.a
 /src/Makefile
 /tests/tdmsppinfo
 /tests/CMakeFiles/
 /tests/Makefile
 /tests/cmake_install.cmake
+*.medi
+Makefile
+core
+nbproject
