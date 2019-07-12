@@ -69,15 +69,6 @@ namespace TDMS{
       delete _o.second;
   }
 
-  void object::_initialise_data( ) {
-    if ( _number_values == 0 )
-      return;
-    size_t s = _number_values * _data_type.ctype_length;
-    log::debug << "Assigned " << s << " bytes for object " << _path << "#values" << _number_values << "*type" << _data_type.ctype_length << log::endl;
-    //_data = malloc(s);
-    this->_data_insert_position = 0;
-  }
-
   object::property::~property( ) {
     if ( value == nullptr ) {
       log::debug << "DOUBLE FREE" << log::endl;

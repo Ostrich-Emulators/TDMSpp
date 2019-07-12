@@ -110,19 +110,19 @@ namespace TDMS {
 			void* value;
 			virtual ~property( );
 
-			double asDouble() const {
+			double asDouble( ) const {
 				return *( (double*) value );
 			}
 
-			int asInt() const {
+			int asInt( ) const {
 				return *( (int*) value );
 			}
 
-			const std::string& asString() const {
+			const std::string& asString( ) const {
 				return *( ( std::string* ) value );
 			}
 
-			time_t asUTCTimestamp() const {
+			time_t asUTCTimestamp( ) const {
 				return *( (time_t*) value );
 			}
 		};
@@ -149,12 +149,11 @@ namespace TDMS {
 	private:
 
 		object( const std::string& path ) : _path( path ) {
-			//        _data = nullptr;
 			_number_values = 0;
 			_data_insert_position = 0;
 			_previous_segment_object = nullptr;
 		}
-		void _initialise_data( );
+
 		std::shared_ptr<channel> _previous_segment_object;
 
 		const std::string _path;
@@ -163,7 +162,6 @@ namespace TDMS {
 		data_type_t _data_type;
 
 		uint64_t _data_start;
-		//void* _data;
 		size_t _data_insert_position;
 
 		std::map<std::string, std::shared_ptr<property>> _properties;
