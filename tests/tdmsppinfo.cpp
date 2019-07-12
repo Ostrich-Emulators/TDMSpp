@@ -73,7 +73,7 @@ int main( int argc, char** argv ) {
   }
 
   std::vector<std::string> _filenames;
-  for ( size_t i = 0; i < parse.nonOptionsCount( ); ++i ) {
+  for ( int i = 0; i < parse.nonOptionsCount( ); ++i ) {
     _filenames.push_back( parse.nonOption( i ) );
   }
   for ( std::string filename : _filenames ) {

@@ -6,7 +6,7 @@ build/*
 /CMakeFiles/
 /src/CMakeFiles/
 /src/cmake_install.cmake
-/src/libtdmspp.a
+/src/libtdmspp*
 /src/Makefile
 /tests/tdmsppinfo
 /tests/CMakeFiles/

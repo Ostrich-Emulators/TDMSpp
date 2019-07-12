@@ -1,6 +1,2 @@
 add_executable(tdmsppinfo tdmsppinfo.cpp)
-target_link_libraries(tdmsppinfo tdmspp)
-set_property(TARGET tdmsppinfo PROPERTY CXX_STANDARD 11)
-set_property(TARGET tdmsppinfo PROPERTY CXX_STANDARD_REQUIRED ON)
-SET(CMAKE_CXX_COMPILER /usr/bin/g++)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g")
+target_link_libraries(tdmsppinfo tdmspp-osem)

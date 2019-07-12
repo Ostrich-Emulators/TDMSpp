@@ -20,7 +20,7 @@ T read_le(const unsigned char* p)
 
 time_t read_timestamp(const unsigned char* p)
 {
-		unsigned long long fraction = read_le<uint64_t>( p ); // time_t doesn't support ms resolution
+		//unsigned long long fraction = read_le<uint64_t>( p ); // time_t doesn't support ms resolution
 		long long secsSince1904 = read_le<int64_t>( p + sizeof (uint64_t ) );
 		time_t result = secsSince1904 - 2082844800; // tdms epoch is 1/1/1904, not 1/1/1970
 		return result;

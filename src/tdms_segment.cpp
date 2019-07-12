@@ -68,7 +68,7 @@ namespace TDMS{
   };
 
   segment::segment( uulong segment_start, segment* previous_segment, file* file )
-  : _parent_file( file ), _startpos_in_file( segment_start ) {
+  : _startpos_in_file( segment_start ), _parent_file( file ) {
 
     fseek( file->f, segment_start, SEEK_SET );
 
@@ -153,7 +153,7 @@ namespace TDMS{
     int32_t num_objs = read_le<int32_t>( data );
     data += 4;
 
-    for ( size_t i = 0; i < num_objs; ++i ) {
+    for ( int i = 0; i < num_objs; ++i ) {
       std::string object_path = read_string( data );
       data += 4 + object_path.size( );
       log::debug << object_path << log::endl;
