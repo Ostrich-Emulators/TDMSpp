@@ -16,3 +16,4 @@ build/*
 Makefile
 core
 nbproject
+install_manifest.txt
