@@ -16,3 +16,5 @@ include_directories(src)
 add_subdirectory(src)
 
 add_subdirectory(tests)
+
+SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
