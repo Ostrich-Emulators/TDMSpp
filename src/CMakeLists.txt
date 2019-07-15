@@ -1,8 +1,3 @@
-add_library(tdmspp-osem SHARED log.cpp tdms_file.cpp tdms_segment.cpp)
-
-install (TARGETS tdmspp-osem DESTINATION lib)
-install (FILES log.hpp tdms.hpp tdms_impl.hpp data_extraction.hpp DESTINATION include)
-
 ##### RPATH stuff #####
 
 # use, i.e. don't skip the full RPATH for the build tree
@@ -26,4 +21,9 @@ IF("${isSystemDir}" STREQUAL "-1")
    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 ENDIF("${isSystemDir}" STREQUAL "-1")
 
+
+add_library(tdmspp-osem SHARED log.cpp tdms_file.cpp tdms_segment.cpp)
+
+install (TARGETS tdmspp-osem DESTINATION lib)
+install (FILES log.hpp tdms.hpp tdms_impl.hpp data_extraction.hpp DESTINATION include)
 
