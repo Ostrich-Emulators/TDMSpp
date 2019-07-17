@@ -13,8 +13,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_library(tdmspp-osem SHARED src/log.cpp src/tdms_file.cpp src/tdms_segment.cpp)
 add_executable(tdmsppinfo tests/tdmsppinfo.cpp)
 
-target_compile_options(tdmspp-osem PRIVATE -Wall -O0)
-target_compile_options(tdmsppinfo PRIVATE -Wall -O0)
+target_compile_options(tdmspp-osem PRIVATE -Wall -O0 -g)
+target_compile_options(tdmsppinfo PRIVATE -Wall -O0 -g)
 
 target_include_directories(tdmspp-osem
     PUBLIC

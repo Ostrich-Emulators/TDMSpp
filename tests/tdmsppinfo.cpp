@@ -10,7 +10,7 @@
 // Define options
 
 enum optionIndex{
-  UNKNOWN, HELP, PROPERTIES, DEBUG
+  UNKNOWN, HELP, PROPERTIES, DEBUG, DATA
 };
 
 const option::Descriptor usage[] = {
@@ -19,11 +19,13 @@ const option::Descriptor usage[] = {
   {HELP, 0, "h", "help", option::Arg::None, "  --help, \tPrint usage and exit." },
   {PROPERTIES, 0, "p", "properties", option::Arg::None, "  --properties, \tPrint channel properties." },
   {DEBUG, 0, "d", "debug", option::Arg::None, "  --debug, \tPrint debugging information to stderr." },
+  {DATA, 0, "D", "data", option::Arg::None, "  --data, \tPrint data (BIG!)." },
   {0, 0, 0, 0, 0, 0 }
 };
 
-class l : public TDMS::listener{
+class listener : public TDMS::listener{
 public:
+  bool printdata = false;
 
   virtual void data( const std::string& channelname, const unsigned char* datablock, TDMS::data_type_t datatype, size_t num_vals ) override {
     //std::cout << "reading " << num_vals << " for channel: " << channelname << std::endl;
@@ -44,11 +46,13 @@ public:
     //    }
 
     memcpy( &vals[0], datablock, datatype.length * num_vals );
-    //    if ( "/'Intellivue'/'CmpndECG(I)'" == channelname ) {
-    //      for ( size_t i = 0; i < num_vals; i++ ) {
-    //        std::cout << std::setprecision( 4 ) << std::fixed << vals[i] << std::endl;
-    //      }
-    //    }
+
+    if ( printdata ) {
+      std::cout << channelname << std::endl;
+      for ( size_t i = 0; i < num_vals; i++ ) {
+        std::cout << "  " << std::setprecision( 4 ) << std::fixed << vals[i] << std::endl;
+      }
+    }
   }
 };
 
@@ -71,6 +75,7 @@ int main( int argc, char** argv ) {
   if ( options[DEBUG] ) {
     TDMS::log::debug.debug_mode = true;
   }
+
 
   std::vector<std::string> _filenames;
   for ( int i = 0; i < parse.nonOptionsCount( ); ++i ) {
@@ -114,7 +119,10 @@ int main( int argc, char** argv ) {
           << std::endl;
     }
 
-    l listener;
+    listener listener;
+    if ( options[DATA] ) {
+      listener.printdata = true;
+    }
     for ( size_t i = 0; i < f.segments( ); i++ ) {
       //std::cout << "loading segment " << i << std::endl;
       f.loadSegment( i, &listener );
