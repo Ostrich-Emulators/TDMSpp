@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
+set(CMAKE_CXX_COMPILER /usr/bin/g++)
+
 project(tdmspp-osem VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:$ORIGIN/../lib:$ORIGIN/")
@@ -13,8 +15,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_library(tdmspp-osem SHARED src/log.cpp src/tdms_file.cpp src/tdms_segment.cpp)
 add_executable(tdmsppinfo tests/tdmsppinfo.cpp)
 
-target_compile_options(tdmspp-osem PRIVATE -Wall -O0 -g)
-target_compile_options(tdmsppinfo PRIVATE -Wall -O0 -g)
+target_compile_options(tdmspp-osem PRIVATE -Wall)
+target_compile_options(tdmsppinfo PRIVATE -Wall)
+
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
+
 
 target_include_directories(tdmspp-osem
     PUBLIC
