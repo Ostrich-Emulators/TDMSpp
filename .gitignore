@@ -11,3 +11,5 @@ nbproject
 install_manifest.txt
 tdmsppinfo
 libtdmspp-osem.so
+*.dll*
+tdmsppinfo.exe

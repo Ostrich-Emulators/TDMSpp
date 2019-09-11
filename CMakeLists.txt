@@ -4,7 +4,7 @@ set(CMAKE_CXX_COMPILER /usr/bin/g++)
 set(LIBVERSION 1.0.0)
 project(tdmspp-osem VERSION ${LIBVERSION} LANGUAGES CXX)
 
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:$ORIGIN/../lib:$ORIGIN/")
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:$ORIGIN/../lib/tdmspp-osem-${LIBVERSION}:$ORIGIN/")
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_COLOR_MAKEFILE ON)
@@ -22,8 +22,6 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
 
 set(include_dest include/tdmspp-osem-${LIBVERSION})
 set(lib_dest lib/tdmspp-osem-${LIBVERSION})
-
-
 
 target_include_directories(tdmspp-osem
     PUBLIC
