@@ -13,3 +13,4 @@ tdmsppinfo
 libtdmspp-osem.so
 *.dll*
 tdmsppinfo.exe
+*.stackdump
