@@ -29,8 +29,8 @@ public:
   std::string signal;
 
   virtual void data( const std::string& channelname, const unsigned char* datablock, TDMS::data_type_t datatype, size_t num_vals ) override {
-    //std::cout << "reading " << num_vals << " for channel: " << channelname << std::endl;
     if ( signal.empty( ) || !( signal.empty( ) || std::string::npos == channelname.find( signal ) ) ) {
+      std::cout << "reading " << num_vals << " for channel: " << channelname << std::endl;
 
       std::vector<double> vals;
       vals.reserve( num_vals );
