@@ -89,7 +89,7 @@ int main( int argc, char** argv ) {
     TDMS::tdmsfile f( filename );
     std::cout << f.segments( ) << " segments parsed" << std::endl;
 
-    for ( TDMS::channel* o : f ) {
+    for ( const auto& o : f ) {
       std::cout << o->get_path( ) << std::endl;
       if ( options[PROPERTIES] ) {
         for ( auto p : o->get_properties( ) ) {
