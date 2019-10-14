@@ -60,7 +60,7 @@ namespace TDMS{
     return _channelmap.at( key );
   }
 
-  std::unique_ptr<channel>& tdmsfile::find_or_make(const std::string& key){
+  std::unique_ptr<channel>& tdmsfile::find_or_make_channel(const std::string& key){
     if( 0 == _channelmap.count(key)){
       _channelmap.insert(std::make_pair(key, std::unique_ptr<channel>( new channel( key))));
     }

@@ -181,7 +181,7 @@ namespace TDMS {
 		virtual ~tdmsfile( );
 
 		std::unique_ptr<channel>& operator[](const std::string& key );
-		std::unique_ptr<channel>& find_or_make( const std::string& key );
+		std::unique_ptr<channel>& find_or_make_channel( const std::string& key );
 
 		const size_t segments( ) const {
 			return _segments.size( );

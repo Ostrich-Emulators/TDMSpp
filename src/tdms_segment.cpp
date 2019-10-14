@@ -84,10 +84,15 @@ namespace TDMS{
     fread( justread, sizeof ( char ), 4, file->f );
     int32_t toc_mask = read_le<int32_t>( (const unsigned char *) &justread[0] );
 
+    log::debug << "Properties:";
     for ( auto prop : segment::_toc_properties ) {
       _toc[prop.first] = ( toc_mask & prop.second ) != 0;
-      log::debug << "Property " << prop.first << " is " << _toc[prop.first] << log::endl;
+
+      if ( _toc[prop.first] ) {
+        log::debug << "\t" << prop.first;
+      }
     }
+    log::debug << log::endl;
 
     // Four bytes for version number
     fread( justread, sizeof ( char ), 4, file->f );
@@ -145,21 +150,22 @@ namespace TDMS{
       // are appended, or previous objects can also be repeated
       // if their properties change
 
-      if ( !previous_segment )
+      if ( !previous_segment ) {
         throw std::runtime_error( "kTocNewObjList is set for segment, but there is no previous segment." );
+      }
       this->_ordered_chunks = previous_segment->_ordered_chunks;
     }
 
     // Read number of metadata objects
-    int32_t num_objs = read_le<int32_t>( data );
+    int32_t num_chunks = read_le<int32_t>( data );
     data += 4;
 
-    for ( int i = 0; i < num_objs; ++i ) {
+    for ( int i = 0; i < num_chunks; ++i ) {
       std::string object_path = read_string( data );
       data += 4 + object_path.size( );
       log::debug << object_path << log::endl;
 
-      std::unique_ptr<channel>& channel = _parent_file->find_or_make( object_path );
+      std::unique_ptr<channel>& channel = _parent_file->find_or_make_channel( object_path );
       bool updating_existing = false;
 
       std::shared_ptr<datachunk> segment_chunk;
@@ -202,8 +208,8 @@ namespace TDMS{
 
     // Count the datasize
     long long data_size = 0;
-    for( const auto& chunk : _ordered_chunks ){
-      if( chunk->_has_data ){
+    for ( const auto& chunk : _ordered_chunks ) {
+      if ( chunk->_has_data ) {
         data_size += chunk->_data_size;
       }
     }
@@ -214,15 +220,13 @@ namespace TDMS{
     }
     else if ( data_size == 0 ) {
       if ( total_data_size != data_size ) {
-        throw std::runtime_error( "Zero channel data size but non-zero data "
-            "length based on segment offset." );
+        throw std::runtime_error( "Zero channel data size but non-zero data length based on segment offset." );
       }
       this->_num_chunks = 0;
       return;
     }
     if ( ( total_data_size % data_size ) != 0 ) {
-      throw std::runtime_error( "Data size is not a multiple of the "
-          "chunk size" );
+      throw std::runtime_error( "Data size is not a multiple of the chunk size" );
     }
     else {
       this->_num_chunks = total_data_size / data_size;
@@ -230,10 +234,10 @@ namespace TDMS{
 
     // Update data count for the overall tdms object
     // using the data count for this segment.
-    for ( auto obj : this->_ordered_chunks ) {
-      if ( obj->_has_data ) {
-        obj->_tdms_channel->_number_values
-            += ( obj->_number_values * this->_num_chunks );
+    for ( auto& chunk : this->_ordered_chunks ) {
+      if ( chunk->_has_data ) {
+        chunk->_tdms_channel->_number_values
+            += ( chunk->_number_values * this->_num_chunks );
       }
     }
   }
@@ -254,7 +258,6 @@ namespace TDMS{
     // move the file pointer to the start of this segment's data
     fseek( _parent_file->f, _startpos_in_file, SEEK_SET );
     fseek( _parent_file->f, _data_offset, SEEK_CUR );
-    //log::debug << "file pointer is at pos: " << ftell( _parent_file->f ) << log::endl;
     fread( _parent_file->segbuff, total_data_size, 1, _parent_file->f );
     const unsigned char * d = _parent_file->segbuff;
 
@@ -350,8 +353,7 @@ namespace TDMS{
       catch ( std::out_of_range& e ) {
         throw std::out_of_range( "Unrecognized datatype in file" );
       }
-      if ( _tdms_channel->_data_type.is_valid( )
-          and _tdms_channel->_data_type != _data_type ) {
+      if ( _tdms_channel->_data_type.is_valid( ) && _tdms_channel->_data_type != _data_type ) {
         throw std::runtime_error( "Segment object doesn't have the same data type as previous segments" );
       }
       else {

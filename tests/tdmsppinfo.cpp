@@ -9,21 +9,21 @@
 
 // Define options
 
-enum optionIndex {
+enum optionIndex{
   UNKNOWN, HELP, PROPERTIES, DEBUG, DATA, SIGNAL
 };
 
 const option::Descriptor usage[] = {
-  {UNKNOWN, 0, "", "", option::Arg::None, "USAGE: tdmsppinfo [options] filename ...\n\nOptions:"},
-  {HELP, 0, "h", "help", option::Arg::None, "  --help, \tPrint usage and exit."},
-  {PROPERTIES, 0, "p", "properties", option::Arg::None, "  --properties, \tPrint channel properties."},
-  {DEBUG, 0, "d", "debug", option::Arg::None, "  --debug, \tPrint debugging information to stderr."},
-  {DATA, 0, "D", "data", option::Arg::None, "  --data, \tPrint data (BIG!)."},
-  {SIGNAL, 0, "s", "signal", option::Arg::Optional, "  --signal, \tOnly look at this signal."},
-  {0, 0, 0, 0, 0, 0}
+  {UNKNOWN, 0, "", "", option::Arg::None, "USAGE: tdmsppinfo [options] filename ...\n\nOptions:" },
+  {HELP, 0, "h", "help", option::Arg::None, "  --help, \tPrint usage and exit." },
+  {PROPERTIES, 0, "p", "properties", option::Arg::None, "  --properties, \tPrint channel properties." },
+  {DEBUG, 0, "d", "debug", option::Arg::None, "  --debug, \tPrint debugging information to stderr." },
+  {DATA, 0, "D", "data", option::Arg::None, "  --data, \tPrint data (BIG!)." },
+  {SIGNAL, 0, "s", "signal", option::Arg::Optional, "  --signal, \tOnly look at this signal." },
+  {0, 0, 0, 0, 0, 0 }
 };
 
-class listener : public TDMS::listener {
+class listener : public TDMS::listener{
 public:
   bool printdata = false;
   std::string signal;
@@ -32,24 +32,24 @@ public:
     if ( signal.empty( ) || !( signal.empty( ) || std::string::npos == channelname.find( signal ) ) ) {
       std::cout << "reading " << num_vals << " for channel: " << channelname << std::endl;
 
-      std::vector<double> vals;
-      vals.reserve( num_vals );
-
-      //    std::cout << "\t";
-      //    for( size_t i=0; i< num_vals; i++ ){
-      //      double out;
-      //      memcpy(&out, datablock+(i*datatype.length), datatype.length);
-      //      //vals.push_back(out);
-      //
-      //      if( i< 50 ){
-      //        std::cout << out << " ";
-      //      }
-      //
-      //    }
-
-      memcpy( &vals[0], datablock, datatype.length * num_vals );
-
       if ( printdata ) {
+        std::vector<double> vals;
+        vals.reserve( num_vals );
+
+        //    std::cout << "\t";
+        //    for( size_t i=0; i< num_vals; i++ ){
+        //      double out;
+        //      memcpy(&out, datablock+(i*datatype.length), datatype.length);
+        //      //vals.push_back(out);
+        //
+        //      if( i< 50 ){
+        //        std::cout << out << " ";
+        //      }
+        //
+        //    }
+
+        memcpy( &vals[0], datablock, datatype.length * num_vals );
+
         std::cout << channelname << std::endl;
         for ( size_t i = 0; i < num_vals; i++ ) {
           std::cout << "  " << std::setprecision( 4 ) << std::fixed << vals[i] << std::endl;
@@ -107,7 +107,7 @@ int main( int argc, char** argv ) {
 
             char buffer[80];
             sprintf( buffer, "%d.%02d.%d %02d:%02d:%02d,%f",
-                    pt->tm_mday, pt->tm_mon + 1, 1900 + pt->tm_year, pt->tm_hour, pt->tm_min, pt->tm_sec, 0.0 );
+                pt->tm_mday, pt->tm_mon + 1, 1900 + pt->tm_year, pt->tm_hour, pt->tm_min, pt->tm_sec, 0.0 );
             std::cout << "  " << p.first << " (timestamp): " << buffer << std::endl;
           }
           else {
@@ -117,8 +117,8 @@ int main( int argc, char** argv ) {
       }
 
       std::cout << o->number_values( ) << " values present ("
-              << o->bytes( ) << ")"
-              << std::endl;
+          << o->bytes( ) << ")"
+          << std::endl;
     }
 
     listener listener;
@@ -134,6 +134,6 @@ int main( int argc, char** argv ) {
       //std::cout << "loading segment " << i << std::endl;
       f.loadSegment( i, earman );
     }
-    earman.release();
+    earman.release( );
   }
 }
