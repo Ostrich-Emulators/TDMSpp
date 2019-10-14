@@ -11,8 +11,8 @@ namespace TDMS {
 	typedef unsigned long long uulong;
 
 	class file;
-	class object;
 	class channel;
+	class datachunk;
 	class listener;
 
 	enum endianness {
@@ -22,8 +22,8 @@ namespace TDMS {
 
 	class segment {
 		friend class file;
-		friend class object;
 		friend class channel;
+		friend class datachunk;
 	private:
 
 		class no_segment_error : public std::runtime_error {
@@ -32,7 +32,6 @@ namespace TDMS {
 			no_segment_error( ) : std::runtime_error( "Not a segment" ) {
 			}
 		};
-		typedef channel object;
 
 		segment( uulong segment_start, segment* previous_segment, file* file );
 		virtual ~segment( );
@@ -53,21 +52,21 @@ namespace TDMS {
 		size_t _num_chunks;
 		uulong _startpos_in_file;
 		uint64_t _data_offset; // bytes of data between _startpos and the raw data
-		std::vector<std::shared_ptr<segment::object>> _ordered_objects;
+		std::vector<std::shared_ptr<datachunk>> _ordered_chunks;
 
 		file* _parent_file;
 
 		static const std::map<const std::string, int32_t> _toc_properties;
 	};
 
-	class channel {
+	class datachunk {
 		friend class segment;
-		friend class object;
+		friend class channel;
 	private:
-		channel( object* o );
+		datachunk( channel* o );
 		const unsigned char* _parse_metadata( const unsigned char* data );
 		size_t _read_values( const unsigned char*& data, endianness e, listener * );
-		object* _tdms_object;
+		channel* _tdms_object;
 
 		uint64_t _number_values;
 		uint64_t _data_size;

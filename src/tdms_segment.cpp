@@ -134,7 +134,7 @@ namespace TDMS{
       if ( previous_segment == nullptr )
         throw std::runtime_error( "kTocMetaData is set for segment, but"
           "there is no previous segment." );
-      this->_ordered_objects = previous_segment->_ordered_objects;
+      this->_ordered_chunks = previous_segment->_ordered_chunks;
       _calculate_chunks( );
       return;
     }
@@ -146,7 +146,7 @@ namespace TDMS{
       if ( previous_segment == nullptr )
         throw std::runtime_error( "kTocNewObjList is set for segment, but"
           "there is no previous segment." );
-      this->_ordered_objects = previous_segment->_ordered_objects;
+      this->_ordered_chunks = previous_segment->_ordered_chunks;
     }
 
     // Read number of metadata objects
@@ -158,30 +158,30 @@ namespace TDMS{
       data += 4 + object_path.size( );
       log::debug << object_path << log::endl;
 
-      TDMS::object* obj = nullptr;
+      TDMS::channel* obj = nullptr;
       if ( _parent_file->_objects.find( object_path )
           != _parent_file->_objects.end( ) ) {
         obj = _parent_file->_objects[object_path];
       }
       else {
-        obj = new TDMS::object( object_path );
+        obj = new TDMS::channel( object_path );
         _parent_file->_objects[object_path] = obj;
       }
       bool updating_existing = false;
 
-      std::shared_ptr<segment::object> segment_object( nullptr );
+      std::shared_ptr<datachunk> segment_object( nullptr );
 
       if ( !_toc["kTocNewObjList"] ) {
         // Search for the same object from the previous
         // segment object list
-        auto it = std::find_if( this->_ordered_objects.begin( ),
-            this->_ordered_objects.end( ),
-            [obj](const std::shared_ptr<segment::object> o ) {
+        auto it = std::find_if( this->_ordered_chunks.begin( ),
+            this->_ordered_chunks.end( ),
+            [obj](const std::shared_ptr<datachunk> o ) {
               return (o->_tdms_object == obj );
               // TODO: compare by value?
               //       define an operator==() ?
             } );
-        if ( it != this->_ordered_objects.end( ) ) {
+        if ( it != this->_ordered_chunks.end( ) ) {
           updating_existing = true;
           log::debug << "Updating object in segment list." << log::endl;
           segment_object = *it;
@@ -190,12 +190,12 @@ namespace TDMS{
       if ( !updating_existing ) {
         if ( obj->_previous_segment_object != nullptr ) {
           log::debug << "Copying previous segment object" << log::endl;
-          segment_object = std::make_shared<segment::object>( *obj->_previous_segment_object );
+          segment_object = std::make_shared<datachunk>( *obj->_previous_segment_object );
         }
         else {
-          segment_object = std::shared_ptr<segment::object>( new segment::object( obj ) );
+          segment_object = std::shared_ptr<datachunk>( new datachunk( obj ) );
         }
-        this->_ordered_objects.push_back( segment_object );
+        this->_ordered_chunks.push_back( segment_object );
       }
       data = segment_object->_parse_metadata( data );
       obj->_previous_segment_object = segment_object;
@@ -213,9 +213,9 @@ namespace TDMS{
     // Count the datasize
     long long data_size = 0;
     std::for_each(
-        _ordered_objects.begin( ),
-        _ordered_objects.end( ),
-        [&data_size]( std::shared_ptr<channel> o ) {
+        _ordered_chunks.begin( ),
+        _ordered_chunks.end( ),
+        [&data_size]( std::shared_ptr<datachunk> o ) {
           if ( o->_has_data ) {
             data_size += o->_data_size;
           }
@@ -244,7 +244,7 @@ namespace TDMS{
 
     // Update data count for the overall tdms object
     // using the data count for this segment.
-    for ( auto obj : this->_ordered_objects ) {
+    for ( auto obj : this->_ordered_chunks ) {
       if ( obj->_has_data ) {
         obj->_tdms_object->_number_values
             += ( obj->_number_values * this->_num_chunks );
@@ -276,7 +276,7 @@ namespace TDMS{
       }
       else {
         log::debug << "Data is contiguous" << log::endl;
-        for ( auto obj : _ordered_objects ) {
+        for ( auto obj : _ordered_chunks ) {
           if ( obj->_has_data ) {
             size_t bytes_processed = obj->_read_values( d, e, listener );
             d += bytes_processed;
@@ -288,7 +288,7 @@ namespace TDMS{
     free( data );
   }
 
-  size_t channel::_read_values( const unsigned char*& data, endianness e, listener * earful ) {
+  size_t datachunk::_read_values( const unsigned char*& data, endianness e, listener * earful ) {
     if ( _data_type.name == "tdsTypeString" ) {
       log::debug << "Reading string data" << log::endl;
       throw std::runtime_error( "Reading string data not yet implemented" );
@@ -312,7 +312,7 @@ namespace TDMS{
   segment::~segment( ) {
   }
 
-  channel::channel( object* o )
+  datachunk::datachunk( channel* o )
   : _tdms_object( o ),
   _data_type( data_type_t::_tds_datatypes.at( 0 ) ) {
     _number_values = 0;
@@ -320,7 +320,7 @@ namespace TDMS{
     _has_data = true;
   }
 
-  const unsigned char* channel::_parse_metadata( const unsigned char* data ) {
+  const unsigned char* datachunk::_parse_metadata( const unsigned char* data ) {
     // Read object metadata and update object information
     uint32_t raw_data_index = read_le<uint32_t>( data );
     data += 4;
@@ -396,8 +396,8 @@ namespace TDMS{
         log::debug << "Property " << prop_name << ": " << *property << log::endl;
         data += 4 + property->size( );
         _tdms_object->_properties.emplace( prop_name,
-            std::shared_ptr<object::property>(
-            new object::property( prop_data_type, (void*) property ) ) );
+            std::shared_ptr<channel::property>(
+            new channel::property( prop_data_type, (void*) property ) ) );
       }
       else {
         void* prop_val = prop_data_type.read( data );
@@ -407,8 +407,8 @@ namespace TDMS{
 
         data += prop_data_type.length;
         _tdms_object->_properties.emplace( prop_name,
-            std::shared_ptr<object::property>(
-            new object::property( prop_data_type, prop_val ) ) );
+            std::shared_ptr<channel::property>(
+            new channel::property( prop_data_type, prop_val ) ) );
         log::debug << "Property " << prop_name << " has been read (" << prop_data_type.name << ")" << log::endl;
       }
     }

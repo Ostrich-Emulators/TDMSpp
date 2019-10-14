@@ -11,7 +11,7 @@
 namespace TDMS {
 
 	class segment;
-	class channel;
+	class datachunk;
 
 	class data_type_t {
 	public:
@@ -93,10 +93,10 @@ namespace TDMS {
 		void _init_default_array_reader( );
 	};
 
-	class object {
+	class channel {
 		friend class file;
 		friend class segment;
-		friend class channel;
+		friend class datachunk;
 	public:
 
 		struct property {
@@ -148,13 +148,12 @@ namespace TDMS {
 		}
 	private:
 
-		object( const std::string& path ) : _path( path ) {
+		channel( const std::string& path ) : _path( path ) {
 			_number_values = 0;
-			_data_insert_position = 0;
 			_previous_segment_object = nullptr;
 		}
 
-		std::shared_ptr<channel> _previous_segment_object;
+		std::shared_ptr<datachunk> _previous_segment_object;
 
 		const std::string _path;
 		bool _has_data;
@@ -162,13 +161,12 @@ namespace TDMS {
 		data_type_t _data_type;
 
 		uint64_t _data_start;
-		size_t _data_insert_position;
 
 		std::map<std::string, std::shared_ptr<property>> _properties;
 
 		size_t _number_values;
 
-		~object( ) {
+		~channel( ) {
 		}
 	};
 
@@ -184,7 +182,7 @@ namespace TDMS {
 		file( const std::string& filename );
 		virtual ~file( );
 
-		const object* operator[](const std::string& key );
+		const channel* operator[](const std::string& key );
 
 		const size_t segments( ) const {
 			return _segments.size( );
@@ -196,7 +194,7 @@ namespace TDMS {
 			friend class file;
 		public:
 
-			object* operator*( ) {
+			channel* operator*( ) {
 				return _it->second;
 			}
 
@@ -211,10 +209,10 @@ namespace TDMS {
 			}
 		private:
 
-			iterator( std::map<std::string, object*>::iterator it )
+			iterator( std::map<std::string, channel*>::iterator it )
 			: _it( it ) {
 			}
-			std::map<std::string, object*>::iterator _it;
+			std::map<std::string, channel*>::iterator _it;
 		};
 
 		iterator begin( ) {
@@ -233,6 +231,6 @@ namespace TDMS {
 		std::string filename;
 		FILE * f;
 
-		std::map<std::string, object*> _objects;
+		std::map<std::string, channel*> _objects;
 	};
 }

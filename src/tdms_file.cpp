@@ -57,7 +57,7 @@ namespace TDMS{
     this->_segments[segnum]->_parse_raw_data( listener );
   }
 
-  const object* file::operator[](const std::string& key ) {
+  const channel* file::operator[](const std::string& key ) {
     return _objects.at( key );
   }
 
@@ -69,7 +69,7 @@ namespace TDMS{
       delete _o.second;
   }
 
-  object::property::~property( ) {
+  channel::property::~property( ) {
     if ( value == nullptr ) {
       log::debug << "DOUBLE FREE" << log::endl;
       return;
