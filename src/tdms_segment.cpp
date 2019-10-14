@@ -129,11 +129,13 @@ namespace TDMS{
     free( segment_metadata );
   }
 
+  segment::~segment( ) {
+  }
+
   void segment::_parse_metadata( const unsigned char* data, const std::unique_ptr<segment>& previous_segment ) {
     if ( !this->_toc["kTocMetaData"] ) {
       if ( !previous_segment )
-        throw std::runtime_error( "kTocMetaData is set for segment, but"
-          "there is no previous segment." );
+        throw std::runtime_error( "kTocMetaData is set for segment, but there is no previous segment." );
       this->_ordered_chunks = previous_segment->_ordered_chunks;
       _calculate_chunks( );
       return;
@@ -144,8 +146,7 @@ namespace TDMS{
       // if their properties change
 
       if ( !previous_segment )
-        throw std::runtime_error( "kTocNewObjList is set for segment, but"
-          "there is no previous segment." );
+        throw std::runtime_error( "kTocNewObjList is set for segment, but there is no previous segment." );
       this->_ordered_chunks = previous_segment->_ordered_chunks;
     }
 
@@ -177,9 +178,9 @@ namespace TDMS{
         }
       }
       if ( !updating_existing ) {
-        if ( channel->_previous_segment_object != nullptr ) {
+        if ( channel->_previous_segment_chunk != nullptr ) {
           log::debug << "Copying previous segment object" << log::endl;
-          segment_chunk = std::make_shared<datachunk>( *channel->_previous_segment_object );
+          segment_chunk = std::make_shared<datachunk>( *channel->_previous_segment_chunk );
         }
         else {
           segment_chunk = std::shared_ptr<datachunk>( new datachunk( channel ) );
@@ -187,7 +188,7 @@ namespace TDMS{
         this->_ordered_chunks.push_back( segment_chunk );
       }
       data = segment_chunk->_parse_metadata( data );
-      channel->_previous_segment_object = segment_chunk;
+      channel->_previous_segment_chunk = segment_chunk;
     }
     _calculate_chunks( );
   }
@@ -301,15 +302,30 @@ namespace TDMS{
     return _number_values * _data_type.ctype_length;
   }
 
-  segment::~segment( ) {
-  }
-
+  /**
+   * 		const std::unique_ptr<channel>& _tdms_channel;
+    uint64_t _number_values;
+    uint64_t _data_size;
+    bool _has_data;
+    uint32_t _dimension;
+    data_type_t _data_type;
+   */
   datachunk::datachunk( const std::unique_ptr<channel>& o )
   : _tdms_channel( o ),
+  _number_values( 0 ),
+  _data_size( 0 ),
+  _has_data( true ),
+  _dimension( 1 ),
   _data_type( data_type_t::_tds_datatypes.at( 0 ) ) {
-    _number_values = 0;
-    _data_size = 0;
-    _has_data = true;
+  }
+
+  datachunk::datachunk( const datachunk& orig ) :
+  _tdms_channel( orig._tdms_channel ),
+  _number_values( orig._number_values ),
+  _data_size( orig._data_size ),
+  _has_data( orig._has_data ),
+  _dimension( orig._dimension ),
+  _data_type( orig._data_type ) {
   }
 
   const unsigned char* datachunk::_parse_metadata( const unsigned char* data ) {

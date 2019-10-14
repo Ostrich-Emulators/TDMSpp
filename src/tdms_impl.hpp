@@ -42,8 +42,6 @@ namespace TDMS {
 		void _parse_raw_data( std::unique_ptr<listener>& );
 		void _calculate_chunks( );
 
-		size_t _chunk_count;
-
 		// Probably a map using enums performs faster.
 		// Will only give a little performance though.
 		// Perhaps use a struct for the _toc, so we don't need
@@ -63,12 +61,14 @@ namespace TDMS {
 	class datachunk {
 		friend class segment;
 		friend class channel;
+	public:
+		datachunk( const datachunk& o );
 	private:
 		datachunk( const std::unique_ptr<channel>& o );
 		const unsigned char* _parse_metadata( const unsigned char* data );
 		size_t _read_values( const unsigned char*& data, endianness e, std::unique_ptr<listener>& );
-		const std::unique_ptr<channel>& _tdms_channel;
 
+		const std::unique_ptr<channel>& _tdms_channel;
 		uint64_t _number_values;
 		uint64_t _data_size;
 		bool _has_data;
