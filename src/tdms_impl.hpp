@@ -24,6 +24,9 @@ namespace TDMS {
 		friend class tdmsfile;
 		friend class channel;
 		friend class datachunk;
+	public:
+		virtual ~segment( );
+
 	private:
 
 		class no_segment_error : public std::runtime_error {
@@ -33,11 +36,9 @@ namespace TDMS {
 			}
 		};
 
-		segment( uulong segment_start, segment* previous_segment, tdmsfile* file );
-		virtual ~segment( );
+		segment( uulong segment_start, const std::unique_ptr<segment>& previous_segment, tdmsfile* file );
 
-		void _parse_metadata( const unsigned char* data,
-				segment* previous_segment );
+		void _parse_metadata( const unsigned char* data, const std::unique_ptr<segment>& previous_segment );
 		void _parse_raw_data( listener * = nullptr );
 		void _calculate_chunks( );
 
@@ -63,10 +64,10 @@ namespace TDMS {
 		friend class segment;
 		friend class channel;
 	private:
-		datachunk( channel* o );
+		datachunk( const std::unique_ptr<channel>& o );
 		const unsigned char* _parse_metadata( const unsigned char* data );
 		size_t _read_values( const unsigned char*& data, endianness e, listener * );
-		channel* _tdms_object;
+		const std::unique_ptr<channel>& _tdms_channel;
 
 		uint64_t _number_values;
 		uint64_t _data_size;

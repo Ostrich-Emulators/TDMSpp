@@ -67,7 +67,7 @@ namespace TDMS{
     {0xFFFFFFFF, data_type_t( "tdsTypeDAQmxRawData", 0, not_implemented ) }
   };
 
-  segment::segment( uulong segment_start, segment* previous_segment, tdmsfile* file )
+  segment::segment( uulong segment_start, const std::unique_ptr<segment>& previous_segment, tdmsfile* file )
   : _startpos_in_file( segment_start ), _parent_file( file ) {
 
     fseek( file->f, segment_start, SEEK_SET );
@@ -129,9 +129,9 @@ namespace TDMS{
     free( segment_metadata );
   }
 
-  void segment::_parse_metadata( const unsigned char* data, segment* previous_segment ) {
+  void segment::_parse_metadata( const unsigned char* data, const std::unique_ptr<segment>& previous_segment ) {
     if ( !this->_toc["kTocMetaData"] ) {
-      if ( previous_segment == nullptr )
+      if ( !previous_segment )
         throw std::runtime_error( "kTocMetaData is set for segment, but"
           "there is no previous segment." );
       this->_ordered_chunks = previous_segment->_ordered_chunks;
@@ -143,7 +143,7 @@ namespace TDMS{
       // are appended, or previous objects can also be repeated
       // if their properties change
 
-      if ( previous_segment == nullptr )
+      if ( !previous_segment )
         throw std::runtime_error( "kTocNewObjList is set for segment, but"
           "there is no previous segment." );
       this->_ordered_chunks = previous_segment->_ordered_chunks;
@@ -158,47 +158,36 @@ namespace TDMS{
       data += 4 + object_path.size( );
       log::debug << object_path << log::endl;
 
-      TDMS::channel* obj = nullptr;
-      if ( _parent_file->_objects.find( object_path )
-          != _parent_file->_objects.end( ) ) {
-        obj = _parent_file->_objects[object_path];
-      }
-      else {
-        obj = new TDMS::channel( object_path );
-        _parent_file->_objects[object_path] = obj;
-      }
+      std::unique_ptr<channel>& channel = _parent_file->find_or_make( object_path );
       bool updating_existing = false;
 
-      std::shared_ptr<datachunk> segment_object( nullptr );
+      std::shared_ptr<datachunk> segment_chunk;
 
       if ( !_toc["kTocNewObjList"] ) {
         // Search for the same object from the previous
         // segment object list
-        auto it = std::find_if( this->_ordered_chunks.begin( ),
-            this->_ordered_chunks.end( ),
-            [obj](const std::shared_ptr<datachunk> o ) {
-              return (o->_tdms_object == obj );
-              // TODO: compare by value?
-              //       define an operator==() ?
-            } );
-        if ( it != this->_ordered_chunks.end( ) ) {
+        for ( auto& segchunk : _ordered_chunks ) {
+          if ( segchunk->_tdms_channel == channel ) {
+            segment_chunk = segchunk;
+          }
+        }
+        if ( segment_chunk ) {
           updating_existing = true;
           log::debug << "Updating object in segment list." << log::endl;
-          segment_object = *it;
         }
       }
       if ( !updating_existing ) {
-        if ( obj->_previous_segment_object != nullptr ) {
+        if ( channel->_previous_segment_object != nullptr ) {
           log::debug << "Copying previous segment object" << log::endl;
-          segment_object = std::make_shared<datachunk>( *obj->_previous_segment_object );
+          segment_chunk = std::make_shared<datachunk>( *channel->_previous_segment_object );
         }
         else {
-          segment_object = std::shared_ptr<datachunk>( new datachunk( obj ) );
+          segment_chunk = std::shared_ptr<datachunk>( new datachunk( channel ) );
         }
-        this->_ordered_chunks.push_back( segment_object );
+        this->_ordered_chunks.push_back( segment_chunk );
       }
-      data = segment_object->_parse_metadata( data );
-      obj->_previous_segment_object = segment_object;
+      data = segment_chunk->_parse_metadata( data );
+      channel->_previous_segment_object = segment_chunk;
     }
     _calculate_chunks( );
   }
@@ -246,7 +235,7 @@ namespace TDMS{
     // using the data count for this segment.
     for ( auto obj : this->_ordered_chunks ) {
       if ( obj->_has_data ) {
-        obj->_tdms_object->_number_values
+        obj->_tdms_channel->_number_values
             += ( obj->_number_values * this->_num_chunks );
       }
     }
@@ -265,9 +254,9 @@ namespace TDMS{
     fseek( _parent_file->f, _startpos_in_file, SEEK_SET );
     fseek( _parent_file->f, _data_offset, SEEK_CUR );
     log::debug << "file pointer is at pos: " << ftell( _parent_file->f ) << log::endl;
-    unsigned char * data = (unsigned char *) malloc( total_data_size );
-    fread( data, total_data_size, 1, _parent_file->f );
-    const unsigned char * d = data;
+    //unsigned char * data = (unsigned char *) malloc( total_data_size );
+    fread( _parent_file->segbuff, total_data_size, 1, _parent_file->f );
+    const unsigned char * d = _parent_file->segbuff;
 
     for ( size_t chunk = 0; chunk < _num_chunks; ++chunk ) {
       if ( this->_toc["kTocInterleavedData"] ) {
@@ -285,7 +274,7 @@ namespace TDMS{
       }
     }
 
-    free( data );
+    //free( data );
   }
 
   size_t datachunk::_read_values( const unsigned char*& data, endianness e, listener * earful ) {
@@ -303,7 +292,7 @@ namespace TDMS{
     //data += (_number_values*_data_type.ctype_length);
     //std::cout << "reading " << _number_values << " values (not really :) for " << _tdms_object->_path << std::endl;
     if ( nullptr != earful ) {
-      earful->data( _tdms_object->_path, data, _data_type, _number_values );
+      earful->data( _tdms_channel->_path, data, _data_type, _number_values );
     }
 
     return _number_values * _data_type.ctype_length;
@@ -312,8 +301,8 @@ namespace TDMS{
   segment::~segment( ) {
   }
 
-  datachunk::datachunk( channel* o )
-  : _tdms_object( o ),
+  datachunk::datachunk( const std::unique_ptr<channel>& o )
+  : _tdms_channel( o ),
   _data_type( data_type_t::_tds_datatypes.at( 0 ) ) {
     _number_values = 0;
     _data_size = 0;
@@ -325,7 +314,7 @@ namespace TDMS{
     uint32_t raw_data_index = read_le<uint32_t>( data );
     data += 4;
 
-    log::debug << "Reading metadata for object " << _tdms_object->_path << log::endl
+    log::debug << "Reading metadata for object " << _tdms_channel->_path << log::endl
         << "raw_data_index: " << raw_data_index << log::endl;
 
     if ( raw_data_index == 0xFFFFFFFF ) {
@@ -333,13 +322,12 @@ namespace TDMS{
       _has_data = false;
     }
     else if ( raw_data_index == 0x00000000 ) {
-      log::debug << "Object has same data structure "
-          "as in the previous segment" << log::endl;
+      log::debug << "Object has same data structure as in the previous segment" << log::endl;
       _has_data = true;
     }
     else {
       // raw_data_index gives the length of the index information.
-      _tdms_object->_has_data = _has_data = true;
+      _tdms_channel->_has_data = _has_data = true;
       // Read the datatype
       uint32_t datatype = read_le<uint32_t>( data );
       data += 4;
@@ -350,13 +338,12 @@ namespace TDMS{
       catch ( std::out_of_range& e ) {
         throw std::out_of_range( "Unrecognized datatype in file" );
       }
-      if ( _tdms_object->_data_type.is_valid( )
-          and _tdms_object->_data_type != _data_type ) {
-        throw std::runtime_error( "Segment object doesn't have the same data "
-            "type as previous segments" );
+      if ( _tdms_channel->_data_type.is_valid( )
+          and _tdms_channel->_data_type != _data_type ) {
+        throw std::runtime_error( "Segment object doesn't have the same data type as previous segments" );
       }
       else {
-        _tdms_object->_data_type = _data_type;
+        _tdms_channel->_data_type = _data_type;
       }
 
       log::debug << "datatype " << _data_type.name << log::endl;
@@ -364,7 +351,7 @@ namespace TDMS{
       // Read data dimension
       _dimension = read_le<uint32_t>( data );
       data += 4;
-      if ( _dimension != 1 ){
+      if ( _dimension != 1 ) {
         log::debug << "Warning: dimension != 1" << log::endl;
       }
 
@@ -380,7 +367,7 @@ namespace TDMS{
       else {
         _data_size = ( _number_values * _dimension * _data_type.length );
       }
-      log::debug << "Number of elements in segment for " << _tdms_object->_path << ": " << _number_values << log::endl;
+      log::debug << "Number of elements in segment for " << _tdms_channel->_path << ": " << _number_values << log::endl;
     }
     // Read data properties
     uint32_t num_properties = read_le<uint32_t>( data );
@@ -396,7 +383,7 @@ namespace TDMS{
         std::string* property = new std::string( read_string( data ) );
         log::debug << "Property " << prop_name << ": " << *property << log::endl;
         data += 4 + property->size( );
-        _tdms_object->_properties.emplace( prop_name,
+        _tdms_channel->_properties.emplace( prop_name,
             std::shared_ptr<channel::property>(
             new channel::property( prop_data_type, (void*) property ) ) );
       }
@@ -407,7 +394,7 @@ namespace TDMS{
         }
 
         data += prop_data_type.length;
-        _tdms_object->_properties.emplace( prop_name,
+        _tdms_channel->_properties.emplace( prop_name,
             std::shared_ptr<channel::property>(
             new channel::property( prop_data_type, prop_val ) ) );
         log::debug << "Property " << prop_name << " has been read (" << prop_data_type.name << ")" << log::endl;

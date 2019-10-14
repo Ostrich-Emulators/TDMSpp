@@ -181,7 +181,8 @@ namespace TDMS {
 		tdmsfile( const std::string& filename );
 		virtual ~tdmsfile( );
 
-		const channel* operator[](const std::string& key );
+		std::unique_ptr<channel>& operator[](const std::string& key );
+		std::unique_ptr<channel>& find_or_make( const std::string& key );
 
 		const size_t segments( ) const {
 			return _segments.size( );
@@ -193,7 +194,7 @@ namespace TDMS {
 			friend class tdmsfile;
 		public:
 
-			channel* operator*( ) {
+			std::unique_ptr<channel>& operator*( ) {
 				return _it->second;
 			}
 
@@ -208,28 +209,33 @@ namespace TDMS {
 			}
 		private:
 
-			iterator( std::map<std::string, channel*>::iterator it )
+			iterator( std::map<std::string, std::unique_ptr<channel>>::iterator it )
 			: _it( it ) {
 			}
-			std::map<std::string, channel*>::iterator _it;
+			std::map<std::string, std::unique_ptr<channel>>::iterator _it;
 		};
 
 		iterator begin( ) {
-			return iterator( _objects.begin( ) );
+			return iterator( _channelmap.begin( ) );
 		}
 
 		iterator end( ) {
-			return iterator( _objects.end( ) );
+			return iterator( _channelmap.end( ) );
 		}
 
 	private:
 		void _parse_segments( FILE * );
 
 		size_t file_contents_size;
-		std::vector<segment*> _segments;
+		std::vector<std::unique_ptr<segment>> _segments;
 		std::string filename;
 		FILE * f;
 
-		std::map<std::string, channel*> _objects;
+		std::unique_ptr<segment> nosegment;
+
+		std::map<std::string, std::unique_ptr<channel>> _channelmap;
+
+		// a memory buffer for loading segment data
+		unsigned char * segbuff;
 	};
 }

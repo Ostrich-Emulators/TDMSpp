@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <cstring>
 #include <cstdint>
+#include <algorithm>
 #include <map>
 
 #include "tdms.hpp"
@@ -27,46 +28,48 @@ namespace TDMS{
 
   void tdmsfile::_parse_segments( FILE * f ) {
     uulong offset = 0;
-    segment* prev = nullptr;
+    size_t maxsegmentsize = 0;
     // First read the metadata of the segments
-    size_t count = 0;
     while ( offset < file_contents_size - 8 * 4 ) {
       try {
-        log::debug << "parsing segment " << ( count++ ) << " from offset: " << offset << log::endl;
-        segment* s = new segment( offset, prev, this );
+        std::unique_ptr<segment>& prev = ( _segments.empty( )
+            ? nosegment
+            : _segments[_segments.size( ) - 1] );
+
+        log::debug << "parsing segment " << ( _segments.size( ) + 1 ) << " from offset: " << offset << log::endl;
+        std::unique_ptr<segment> s( new segment( offset, prev, this ) );
+
+        maxsegmentsize = std::max( maxsegmentsize, s->_next_segment_offset );
+
         offset += s->_next_segment_offset;
-        _segments.push_back( s );
-        prev = s;
+        _segments.push_back( std::move( s ) );
       }
       catch ( segment::no_segment_error& e ) {
         // Last segment was parsed.
         break;
       }
     }
-    //    for(auto obj: this->_objects)
-    //    {
-    //        obj.second->_initialise_data();
-    //    }
-    //    for(auto seg: this->_segments)
-    //    {
-    //        seg->_parse_raw_data();
-    //    }
+    segbuff = (unsigned char*) malloc( maxsegmentsize );
   }
 
   void tdmsfile::loadSegment( size_t segnum, listener* listener ) {
     this->_segments[segnum]->_parse_raw_data( listener );
   }
 
-  const channel* tdmsfile::operator[](const std::string& key ) {
-    return _objects.at( key );
+  std::unique_ptr<channel>& tdmsfile::operator[](const std::string& key ) {
+    return _channelmap.at( key );
+  }
+
+  std::unique_ptr<channel>& tdmsfile::find_or_make(const std::string& key){
+    if( 0 == _channelmap.count(key)){
+      _channelmap.insert(std::make_pair(key, std::unique_ptr<channel>( new channel( key))));
+    }
+    return _channelmap.at(key);
   }
 
   tdmsfile::~tdmsfile( ) {
     fclose( f );
-    for ( segment* _s : _segments )
-      delete _s;
-    for ( auto _o : _objects )
-      delete _o.second;
+    free( segbuff );
   }
 
   channel::property::~property( ) {
