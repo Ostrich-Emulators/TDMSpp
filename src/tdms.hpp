@@ -188,7 +188,7 @@ namespace TDMS {
 			return _segments.size( );
 		}
 
-		void loadSegment( size_t segnum, listener * = nullptr );
+		void loadSegment( size_t segnum, std::unique_ptr<listener>& );
 
 		class iterator {
 			friend class tdmsfile;

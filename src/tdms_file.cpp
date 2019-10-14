@@ -52,7 +52,7 @@ namespace TDMS{
     segbuff = (unsigned char*) malloc( maxsegmentsize );
   }
 
-  void tdmsfile::loadSegment( size_t segnum, listener* listener ) {
+  void tdmsfile::loadSegment( size_t segnum, std::unique_ptr<listener>& listener ) {
     this->_segments[segnum]->_parse_raw_data( listener );
   }
 

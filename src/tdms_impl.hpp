@@ -39,7 +39,7 @@ namespace TDMS {
 		segment( uulong segment_start, const std::unique_ptr<segment>& previous_segment, tdmsfile* file );
 
 		void _parse_metadata( const unsigned char* data, const std::unique_ptr<segment>& previous_segment );
-		void _parse_raw_data( listener * = nullptr );
+		void _parse_raw_data( std::unique_ptr<listener>& );
 		void _calculate_chunks( );
 
 		size_t _chunk_count;
@@ -66,7 +66,7 @@ namespace TDMS {
 	private:
 		datachunk( const std::unique_ptr<channel>& o );
 		const unsigned char* _parse_metadata( const unsigned char* data );
-		size_t _read_values( const unsigned char*& data, endianness e, listener * );
+		size_t _read_values( const unsigned char*& data, endianness e, std::unique_ptr<listener>& );
 		const std::unique_ptr<channel>& _tdms_channel;
 
 		uint64_t _number_values;

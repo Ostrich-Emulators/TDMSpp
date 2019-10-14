@@ -241,9 +241,11 @@ namespace TDMS{
     }
   }
 
-  void segment::_parse_raw_data( listener * listener ) {
-    if ( !this->_toc["kTocRawData"] )
+  void segment::_parse_raw_data( std::unique_ptr<listener>& listener ) {
+    if ( !this->_toc["kTocRawData"] ) {
       return;
+    }
+
     size_t total_data_size = _next_segment_offset - _data_offset;
 
     endianness e = LITTLE;
@@ -277,7 +279,8 @@ namespace TDMS{
     //free( data );
   }
 
-  size_t datachunk::_read_values( const unsigned char*& data, endianness e, listener * earful ) {
+  size_t datachunk::_read_values( const unsigned char*& data, endianness e,
+      std::unique_ptr<listener>& earful ) {
     if ( _data_type.name == "tdsTypeString" ) {
       log::debug << "Reading string data" << log::endl;
       throw std::runtime_error( "Reading string data not yet implemented" );
@@ -291,7 +294,7 @@ namespace TDMS{
     //_tdms_object->_data_insert_position += (_number_values*_data_type.ctype_length);
     //data += (_number_values*_data_type.ctype_length);
     //std::cout << "reading " << _number_values << " values (not really :) for " << _tdms_object->_path << std::endl;
-    if ( nullptr != earful ) {
+    if ( earful ) {
       earful->data( _tdms_channel->_path, data, _data_type, _number_values );
     }
 
