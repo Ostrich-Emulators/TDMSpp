@@ -86,7 +86,7 @@ int main( int argc, char** argv ) {
   for ( std::string filename : _filenames ) {
     if ( _filenames.size( ) > 1 )
       std::cout << filename << ":" << std::endl;
-    TDMS::file f( filename );
+    TDMS::tdmsfile f( filename );
     std::cout << f.segments( ) << " segments parsed" << std::endl;
 
     for ( TDMS::channel* o : f ) {

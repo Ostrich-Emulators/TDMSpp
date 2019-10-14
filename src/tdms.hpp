@@ -94,10 +94,12 @@ namespace TDMS {
 	};
 
 	class channel {
-		friend class file;
+		friend class tdmsfile;
 		friend class segment;
 		friend class datachunk;
 	public:
+		~channel( ) {}
+
 
 		struct property {
 
@@ -165,9 +167,6 @@ namespace TDMS {
 		std::map<std::string, std::shared_ptr<property>> _properties;
 
 		size_t _number_values;
-
-		~channel( ) {
-		}
 	};
 
 	class listener {
@@ -176,11 +175,11 @@ namespace TDMS {
 				data_type_t, size_t num_vals ) = 0;
 	};
 
-	class file {
+	class tdmsfile {
 		friend class segment;
 	public:
-		file( const std::string& filename );
-		virtual ~file( );
+		tdmsfile( const std::string& filename );
+		virtual ~tdmsfile( );
 
 		const channel* operator[](const std::string& key );
 
@@ -191,7 +190,7 @@ namespace TDMS {
 		void loadSegment( size_t segnum, listener * = nullptr );
 
 		class iterator {
-			friend class file;
+			friend class tdmsfile;
 		public:
 
 			channel* operator*( ) {

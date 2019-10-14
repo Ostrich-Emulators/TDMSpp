@@ -67,7 +67,7 @@ namespace TDMS{
     {0xFFFFFFFF, data_type_t( "tdsTypeDAQmxRawData", 0, not_implemented ) }
   };
 
-  segment::segment( uulong segment_start, segment* previous_segment, file* file )
+  segment::segment( uulong segment_start, segment* previous_segment, tdmsfile* file )
   : _startpos_in_file( segment_start ), _parent_file( file ) {
 
     fseek( file->f, segment_start, SEEK_SET );
@@ -364,8 +364,9 @@ namespace TDMS{
       // Read data dimension
       _dimension = read_le<uint32_t>( data );
       data += 4;
-      if ( _dimension != 1 )
-        log::debug << "Warning: dimension != 0" << log::endl;
+      if ( _dimension != 1 ){
+        log::debug << "Warning: dimension != 1" << log::endl;
+      }
 
       // Read the number of values
       _number_values = read_le<uint64_t>( data );

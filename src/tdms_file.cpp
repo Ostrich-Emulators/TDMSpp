@@ -11,7 +11,7 @@
 namespace TDMS{
   typedef unsigned long long uulong;
 
-  file::file( const std::string& filename ) : filename( filename ) {
+  tdmsfile::tdmsfile( const std::string& filename ) : filename( filename ) {
     f = fopen( filename.c_str( ), "r" );
     if ( !f ) {
       throw std::runtime_error( "File \"" + filename + "\" could not be opened" );
@@ -25,7 +25,7 @@ namespace TDMS{
     file_contents_size = 0;
   }
 
-  void file::_parse_segments( FILE * f ) {
+  void tdmsfile::_parse_segments( FILE * f ) {
     uulong offset = 0;
     segment* prev = nullptr;
     // First read the metadata of the segments
@@ -53,15 +53,15 @@ namespace TDMS{
     //    }
   }
 
-  void file::loadSegment( size_t segnum, listener* listener ) {
+  void tdmsfile::loadSegment( size_t segnum, listener* listener ) {
     this->_segments[segnum]->_parse_raw_data( listener );
   }
 
-  const channel* file::operator[](const std::string& key ) {
+  const channel* tdmsfile::operator[](const std::string& key ) {
     return _objects.at( key );
   }
 
-  file::~file( ) {
+  tdmsfile::~tdmsfile( ) {
     fclose( f );
     for ( segment* _s : _segments )
       delete _s;
