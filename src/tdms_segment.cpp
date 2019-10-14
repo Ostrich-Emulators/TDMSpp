@@ -178,9 +178,9 @@ namespace TDMS{
         }
       }
       if ( !updating_existing ) {
-        if ( channel->_previous_segment_chunk != nullptr ) {
+        if ( channel->_previous_segment_chunk ) {
           log::debug << "Copying previous segment object" << log::endl;
-          segment_chunk = std::make_shared<datachunk>( *channel->_previous_segment_chunk );
+          segment_chunk = std::shared_ptr<datachunk>( new datachunk( *channel->_previous_segment_chunk ) );
         }
         else {
           segment_chunk = std::shared_ptr<datachunk>( new datachunk( channel ) );
@@ -202,15 +202,11 @@ namespace TDMS{
 
     // Count the datasize
     long long data_size = 0;
-    std::for_each(
-        _ordered_chunks.begin( ),
-        _ordered_chunks.end( ),
-        [&data_size]( std::shared_ptr<datachunk> o ) {
-          if ( o->_has_data ) {
-            data_size += o->_data_size;
-          }
-        }
-    );
+    for( const auto& chunk : _ordered_chunks ){
+      if( chunk->_has_data ){
+        data_size += chunk->_data_size;
+      }
+    }
     long long total_data_size = this->_next_segment_offset - this->_data_offset;
 
     if ( data_size < 0 || total_data_size < 0 ) {
@@ -251,33 +247,30 @@ namespace TDMS{
 
     endianness e = LITTLE;
     if ( this->_toc["kTocBigEndian"] ) {
-      throw std::runtime_error( "Big endian reading not yet implemented" );
       e = BIG;
+      throw std::runtime_error( "Big endian reading not yet implemented" );
     }
+
+    // move the file pointer to the start of this segment's data
     fseek( _parent_file->f, _startpos_in_file, SEEK_SET );
     fseek( _parent_file->f, _data_offset, SEEK_CUR );
-    log::debug << "file pointer is at pos: " << ftell( _parent_file->f ) << log::endl;
-    //unsigned char * data = (unsigned char *) malloc( total_data_size );
+    //log::debug << "file pointer is at pos: " << ftell( _parent_file->f ) << log::endl;
     fread( _parent_file->segbuff, total_data_size, 1, _parent_file->f );
     const unsigned char * d = _parent_file->segbuff;
 
     for ( size_t chunk = 0; chunk < _num_chunks; ++chunk ) {
       if ( this->_toc["kTocInterleavedData"] ) {
-        log::debug << "Data is interleaved" << log::endl;
         throw std::runtime_error( "Reading interleaved data not supported yet" );
       }
       else {
-        log::debug << "Data is contiguous" << log::endl;
-        for ( auto obj : _ordered_chunks ) {
-          if ( obj->_has_data ) {
-            size_t bytes_processed = obj->_read_values( d, e, listener );
+        for ( auto& chunk : _ordered_chunks ) {
+          if ( chunk->_has_data ) {
+            size_t bytes_processed = chunk->_read_values( d, e, listener );
             d += bytes_processed;
           }
         }
       }
     }
-
-    //free( data );
   }
 
   size_t datachunk::_read_values( const unsigned char*& data, endianness e,
@@ -310,8 +303,8 @@ namespace TDMS{
     uint32_t _dimension;
     data_type_t _data_type;
    */
-  datachunk::datachunk( const std::unique_ptr<channel>& o )
-  : _tdms_channel( o ),
+  datachunk::datachunk( const std::unique_ptr<channel>& o ) :
+  _tdms_channel( o ),
   _number_values( 0 ),
   _data_size( 0 ),
   _has_data( true ),
