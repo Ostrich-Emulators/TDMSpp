@@ -60,17 +60,24 @@ namespace TDMS{
     return _channelmap.at( key );
   }
 
-  std::unique_ptr<channel>& tdmsfile::find_or_make_channel(const std::string& key){
-    if( 0 == _channelmap.count(key)){
-      _channelmap.insert(std::make_pair(key, std::unique_ptr<channel>( new channel( key))));
+  std::unique_ptr<channel>& tdmsfile::find_or_make_channel( const std::string& key ) {
+    if ( 0 == _channelmap.count( key ) ) {
+      _channelmap.insert( std::make_pair( key, std::unique_ptr<channel>( new channel( key ) ) ) );
     }
-    return _channelmap.at(key);
+    return _channelmap.at( key );
   }
 
   tdmsfile::~tdmsfile( ) {
     fclose( f );
     free( segbuff );
   }
+
+  channel::channel( const std::string& path ) : _path( path ), _has_data( false ),
+  _data_start( 0 ), _number_values( 0 ) {
+  }
+
+  channel::~channel( ) {
+  };
 
   channel::property::~property( ) {
     if ( value == nullptr ) {

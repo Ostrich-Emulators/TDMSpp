@@ -141,7 +141,9 @@ namespace TDMS{
     if ( !this->_toc["kTocMetaData"] ) {
       if ( !previous_segment )
         throw std::runtime_error( "kTocMetaData is set for segment, but there is no previous segment." );
-      this->_ordered_chunks = previous_segment->_ordered_chunks;
+      for ( const auto& chunk : previous_segment->_ordered_chunks ) {
+        this->_ordered_chunks.push_back( std::unique_ptr<datachunk>( new datachunk( *chunk ) ) );
+      }
       _calculate_chunks( );
       return;
     }
@@ -153,7 +155,9 @@ namespace TDMS{
       if ( !previous_segment ) {
         throw std::runtime_error( "kTocNewObjList is set for segment, but there is no previous segment." );
       }
-      this->_ordered_chunks = previous_segment->_ordered_chunks;
+      for ( const auto& chunk : previous_segment->_ordered_chunks ) {
+        this->_ordered_chunks.push_back( std::unique_ptr<datachunk>( new datachunk( *chunk ) ) );
+      }
     }
 
     // Read number of metadata objects
@@ -168,33 +172,35 @@ namespace TDMS{
       std::unique_ptr<channel>& channel = _parent_file->find_or_make_channel( object_path );
       bool updating_existing = false;
 
-      std::shared_ptr<datachunk> segment_chunk;
+      datachunk * segment_chunk = nullptr;
 
       if ( !_toc["kTocNewObjList"] ) {
         // Search for the same object from the previous
         // segment object list
         for ( auto& segchunk : _ordered_chunks ) {
           if ( segchunk->_tdms_channel == channel ) {
-            segment_chunk = segchunk;
+            segment_chunk = segchunk.get( );
+            updating_existing = true;
+            log::debug << "Updating object in segment list." << log::endl;
+            break;
           }
-        }
-        if ( segment_chunk ) {
-          updating_existing = true;
-          log::debug << "Updating object in segment list." << log::endl;
         }
       }
       if ( !updating_existing ) {
+        std::unique_ptr<datachunk> newchunk;
         if ( channel->_previous_segment_chunk ) {
           log::debug << "Copying previous segment object" << log::endl;
-          segment_chunk = std::shared_ptr<datachunk>( new datachunk( *channel->_previous_segment_chunk ) );
+          newchunk.reset( new datachunk( *channel->_previous_segment_chunk ) );
         }
         else {
-          segment_chunk = std::shared_ptr<datachunk>( new datachunk( channel ) );
+          newchunk.reset( new datachunk( channel ) );
         }
-        this->_ordered_chunks.push_back( segment_chunk );
+        this->_ordered_chunks.push_back( std::move( newchunk ) );
+
+        segment_chunk = this->_ordered_chunks[this->_ordered_chunks.size( ) - 1].get( );
       }
       data = segment_chunk->_parse_metadata( data );
-      channel->_previous_segment_chunk = segment_chunk;
+      channel->_previous_segment_chunk.reset( new datachunk( *segment_chunk ) );
     }
     _calculate_chunks( );
   }

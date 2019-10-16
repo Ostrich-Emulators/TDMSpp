@@ -51,7 +51,7 @@ namespace TDMS {
 		size_t _num_chunks;
 		uulong _startpos_in_file;
 		uint64_t _data_offset; // bytes of data between _startpos and the raw data
-		std::vector<std::shared_ptr<datachunk>> _ordered_chunks;
+		std::vector<std::unique_ptr<datachunk>> _ordered_chunks;
 
 		tdmsfile* _parent_file;
 

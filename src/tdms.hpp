@@ -98,9 +98,8 @@ namespace TDMS {
 		friend class segment;
 		friend class datachunk;
 	public:
-
-		~channel( ) {
-		}
+		channel( const std::string& path );
+		~channel( );
 
 		struct property {
 
@@ -150,11 +149,7 @@ namespace TDMS {
 			return _properties;
 		}
 	private:
-
-		channel( const std::string& path ) : _path( path ), _number_values( 0 ) {
-		}
-
-		std::shared_ptr<datachunk> _previous_segment_chunk;
+		std::unique_ptr<datachunk> _previous_segment_chunk;
 
 		const std::string _path;
 		bool _has_data;
