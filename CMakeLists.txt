@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_CXX_COMPILER /usr/bin/g++)
-set(LIBVERSION 1.0.0)
+set(LIBVERSION 2.0.0)
 project(tdmspp-osem VERSION ${LIBVERSION} LANGUAGES CXX)
 
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:$ORIGIN/../lib/tdmspp-osem-${LIBVERSION}:$ORIGIN/")
@@ -37,10 +37,12 @@ target_include_directories(tdmsppinfo
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
 
+configure_file(tdmspp-osem-config-version.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/tdmspp-osem-config-version.cmake @ONLY)
+
 install (TARGETS tdmsppinfo DESTINATION bin)
 install (TARGETS tdmspp-osem EXPORT tdmspp-osem DESTINATION ${lib_dest})
 install (FILES src/log.hpp src/tdms.hpp src/tdms_impl.hpp src/data_extraction.hpp DESTINATION ${include_dest})
 install (EXPORT tdmspp-osem DESTINATION ${lib_dest})
 
-install (FILES tdmspp-osem-config.cmake DESTINATION ${lib_dest})
+install (FILES tdmspp-osem-config.cmake ${CMAKE_CURRENT_BINARY_DIR}/tdmspp-osem-config-version.cmake DESTINATION ${lib_dest})
 #install (EXPORT tdmspp-osem-config DESTINATION .)

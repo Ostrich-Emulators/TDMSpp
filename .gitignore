@@ -14,3 +14,4 @@ libtdmspp-osem.so
 *.dll*
 tdmsppinfo.exe
 *.stackdump
+tdmspp-osem-config-version.cmake
