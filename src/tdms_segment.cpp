@@ -73,15 +73,15 @@ namespace TDMS{
     fseek( file->f, segment_start, SEEK_SET );
 
     unsigned char justread[8]; // biggest element we'll read here
-    fread( justread, sizeof ( char ), 4, file->f );
+    auto ok = fread( justread, sizeof ( char ), 4, file->f );
 
     const char* header = "TDSm";
-    if ( memcmp( justread, header, 4 ) != 0 ) {
+    if ( !ok || memcmp( justread, header, 4 ) != 0 ) {
       throw segment::no_segment_error( );
     }
 
     // First four bytes are toc mask
-    fread( justread, sizeof ( char ), 4, file->f );
+    ok = fread( justread, sizeof ( char ), 4, file->f );
     int32_t toc_mask = read_le<int32_t>( (const unsigned char *) &justread[0] );
 
     log::debug << "Properties:";
@@ -95,7 +95,11 @@ namespace TDMS{
     log::debug << log::endl;
 
     // Four bytes for version number
-    fread( justread, sizeof ( char ), 4, file->f );
+    ok = fread( justread, sizeof ( char ), 4, file->f );
+    if ( !ok ) {
+      throw segment::read_error( );
+    }
+
     int32_t version = read_le<int32_t>( (const unsigned char *) &justread[0] );
     log::debug << "Version: " << version << log::endl;
     switch ( version ) {
@@ -109,9 +113,15 @@ namespace TDMS{
 
     // 64 bits pointer to next segment
     // and same for raw data offset
-    fread( justread, sizeof ( char ), 8, file->f );
+    ok = fread( justread, sizeof ( char ), 8, file->f );
+    if ( !ok ) {
+      throw segment::read_error( );
+    }
     uint64_t next_segment_offset = read_le<uint64_t>( (const unsigned char *) &justread[0] );
-    fread( justread, sizeof ( char ), 8, file->f );
+    ok = fread( justread, sizeof ( char ), 8, file->f );
+    if ( !ok ) {
+      throw segment::read_error( );
+    }
     uint64_t raw_data_offset = read_le<uint64_t>( (const unsigned char *) &justread[0] );
 
     // we'll add 4+4+4+8+8 = 28 bytes to our offsets
@@ -129,7 +139,10 @@ namespace TDMS{
     unsigned char * segment_metadata = (unsigned char*) malloc( raw_data_offset );
     // read the metadata into memory (the file stream is currently pointing to
     // the start of the metadata)
-    fread( segment_metadata, raw_data_offset, 1, file->f );
+    ok = fread( segment_metadata, raw_data_offset, 1, file->f );
+    if ( !ok ) {
+      throw segment::read_error( );
+    }
     _parse_metadata( segment_metadata, previous_segment );
     free( segment_metadata );
   }

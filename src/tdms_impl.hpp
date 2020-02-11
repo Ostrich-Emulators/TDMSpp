@@ -36,6 +36,13 @@ namespace TDMS {
 			}
 		};
 
+		class read_error : public std::runtime_error {
+		public:
+
+			read_error( ) : std::runtime_error( "Segment read error" ) {
+			}
+		};
+
 		segment( uulong segment_start, const std::unique_ptr<segment>& previous_segment, tdmsfile* file );
 
 		void _parse_metadata( const unsigned char* data, const std::unique_ptr<segment>& previous_segment );
