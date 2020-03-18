@@ -267,6 +267,10 @@ namespace TDMS{
     }
 
     size_t total_data_size = _next_segment_offset - _data_offset;
+    if( 0 == total_data_size ){
+      // no data in this segment, so nothing to do
+      return;
+    }
 
     endianness e = LITTLE;
     if ( this->_toc["kTocBigEndian"] ) {
