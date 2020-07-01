@@ -6,6 +6,12 @@
 #include <functional>
 #include <memory>
 
+#if defined(_WIN32) || defined(_Win64)
+  #define DllExport __declspec(dllexport)
+#else
+  #define DllExport
+#endif
+
 namespace TDMS {
 
 	typedef unsigned long long uulong;
@@ -20,7 +26,7 @@ namespace TDMS {
 		LITTLE
 	};
 
-	class segment {
+	DllExport class segment {
 		friend class tdmsfile;
 		friend class channel;
 		friend class datachunk;
@@ -65,7 +71,7 @@ namespace TDMS {
 		static const std::map<const std::string, int32_t> _toc_properties;
 	};
 
-	class datachunk {
+	DllExport class datachunk {
 		friend class segment;
 		friend class channel;
 	public:

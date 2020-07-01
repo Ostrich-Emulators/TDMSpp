@@ -8,12 +8,18 @@
 #include <memory>
 #include "log.hpp"
 
+#if defined(_WIN32) || defined(_Win64)
+  #define DllExport __declspec(dllexport)
+#else
+  #define DllExport
+#endif
+
 namespace TDMS {
 
 	class segment;
 	class datachunk;
 
-	class data_type_t {
+	DllExport class data_type_t {
 	public:
 		typedef std::function<void* ( ) > parse_t;
 
@@ -93,7 +99,7 @@ namespace TDMS {
 		void _init_default_array_reader( );
 	};
 
-	class channel {
+	DllExport class channel {
 		friend class tdmsfile;
 		friend class segment;
 		friend class datachunk;
@@ -163,13 +169,13 @@ namespace TDMS {
 		size_t _number_values;
 	};
 
-	class listener {
+	DllExport class listener {
 	public:
 		virtual void data( const std::string& channelname, const unsigned char* rawdata,
 				data_type_t, size_t num_vals ) = 0;
 	};
 
-	class tdmsfile {
+	DllExport class tdmsfile {
 		friend class segment;
 	public:
 		tdmsfile( const std::string& filename );
