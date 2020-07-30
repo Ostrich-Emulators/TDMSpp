@@ -154,7 +154,7 @@ namespace TDMS{
       if ( !previous_segment )
         throw std::runtime_error( "kTocMetaData is set for segment, but there is no previous segment." );
       for ( const auto& chunk : previous_segment->_ordered_chunks ) {
-        this->_ordered_chunks.push_back( std::unique_ptr<datachunk>( new datachunk( *chunk ) ) );
+        this->_ordered_chunks.push_back( std::make_unique<datachunk>( *chunk ) );
       }
       _calculate_chunks( );
       return;
@@ -168,7 +168,7 @@ namespace TDMS{
         throw std::runtime_error( "kTocNewObjList is set for segment, but there is no previous segment." );
       }
       for ( const auto& chunk : previous_segment->_ordered_chunks ) {
-        this->_ordered_chunks.push_back( std::unique_ptr<datachunk>( new datachunk( *chunk ) ) );
+        this->_ordered_chunks.push_back( std::make_unique<datachunk>( *chunk ) );
       }
     }
 

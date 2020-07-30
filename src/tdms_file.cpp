@@ -62,7 +62,7 @@ namespace TDMS{
 
   channel * tdmsfile::find_or_make_channel( const std::string& key ) {
     if ( 0 == _channelmap.count( key ) ) {
-      _channelmap.insert( std::make_pair( key, std::unique_ptr<channel>( new channel( key ) ) ) );
+      _channelmap.insert( std::make_pair( key, std::make_unique<channel>( key ) ) );
     }
     return _channelmap.at( key ).get( );
   }
