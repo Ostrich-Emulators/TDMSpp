@@ -181,21 +181,21 @@ namespace TDMS {
 		tdmsfile( const std::string& filename );
 		virtual ~tdmsfile( );
 
-		std::unique_ptr<channel>& operator[](const std::string& key );
-		std::unique_ptr<channel>& find_or_make_channel( const std::string& key );
+		channel * operator[](const std::string& key );
+		channel * find_or_make_channel( const std::string& key );
 
 		const size_t segments( ) const {
 			return _segments.size( );
 		}
 
-		void loadSegment( size_t segnum, std::unique_ptr<listener>& );
+		void loadSegment( size_t segnum, listener * );
 
 		class iterator {
 			friend class tdmsfile;
 		public:
 
-			std::unique_ptr<channel>& operator*( ) {
-				return _it->second;
+			channel * operator*( ) {
+				return _it->second.get();
 			}
 
 			const iterator& operator++( ) {
@@ -230,8 +230,6 @@ namespace TDMS {
 		std::vector<std::unique_ptr<segment>> _segments;
 		std::string filename;
 		FILE * f;
-
-		std::unique_ptr<segment> nosegment;
 
 		std::map<std::string, std::unique_ptr<channel>> _channelmap;
 

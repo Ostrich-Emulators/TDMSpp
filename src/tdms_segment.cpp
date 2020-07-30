@@ -67,8 +67,8 @@ namespace TDMS{
     {0xFFFFFFFF, data_type_t( "tdsTypeDAQmxRawData", 0, not_implemented ) }
   };
 
-  segment::segment( uulong segment_start, const std::unique_ptr<segment>& previous_segment, tdmsfile* file )
-  : _startpos_in_file( segment_start ), _parent_file( file ) {
+  segment::segment( uulong segment_start, segment * previous_segment, tdmsfile* file )
+      : _startpos_in_file( segment_start ), _parent_file( file ) {
 
     fseek( file->f, segment_start, SEEK_SET );
 
@@ -147,10 +147,9 @@ namespace TDMS{
     free( segment_metadata );
   }
 
-  segment::~segment( ) {
-  }
+  segment::~segment( ) { }
 
-  void segment::_parse_metadata( const unsigned char* data, const std::unique_ptr<segment>& previous_segment ) {
+  void segment::_parse_metadata( const unsigned char* data, segment * previous_segment ) {
     if ( !this->_toc["kTocMetaData"] ) {
       if ( !previous_segment )
         throw std::runtime_error( "kTocMetaData is set for segment, but there is no previous segment." );
@@ -182,7 +181,7 @@ namespace TDMS{
       data += 4 + object_path.size( );
       log::debug << object_path << log::endl;
 
-      std::unique_ptr<channel>& channel = _parent_file->find_or_make_channel( object_path );
+      auto channel = _parent_file->find_or_make_channel( object_path );
       bool updating_existing = false;
 
       datachunk * segment_chunk = nullptr;
@@ -261,13 +260,13 @@ namespace TDMS{
     }
   }
 
-  void segment::_parse_raw_data( std::unique_ptr<listener>& listener ) {
+  void segment::_parse_raw_data( listener * listener ) {
     if ( !this->_toc["kTocRawData"] ) {
       return;
     }
 
     size_t total_data_size = _next_segment_offset - _data_offset;
-    if( 0 == total_data_size ){
+    if ( 0 == total_data_size ) {
       // no data in this segment, so nothing to do
       return;
     }
@@ -302,8 +301,7 @@ namespace TDMS{
     }
   }
 
-  size_t datachunk::_read_values( const unsigned char*& data, endianness e,
-      std::unique_ptr<listener>& earful ) {
+  size_t datachunk::_read_values( const unsigned char*& data, endianness e, listener * earful ) {
     if ( _data_type.name == "tdsTypeString" ) {
       log::debug << "Reading string data" << log::endl;
       throw std::runtime_error( "Reading string data not yet implemented" );
@@ -332,23 +330,21 @@ namespace TDMS{
     uint32_t _dimension;
     data_type_t _data_type;
    */
-  datachunk::datachunk( const std::unique_ptr<channel>& o ) :
-  _tdms_channel( o ),
-  _number_values( 0 ),
-  _data_size( 0 ),
-  _has_data( true ),
-  _dimension( 1 ),
-  _data_type( data_type_t::_tds_datatypes.at( 0 ) ) {
-  }
+  datachunk::datachunk( channel * o ) :
+      _tdms_channel( o ),
+      _number_values( 0 ),
+      _data_size( 0 ),
+      _has_data( true ),
+      _dimension( 1 ),
+      _data_type( data_type_t::_tds_datatypes.at( 0 ) ) { }
 
   datachunk::datachunk( const datachunk& orig ) :
-  _tdms_channel( orig._tdms_channel ),
-  _number_values( orig._number_values ),
-  _data_size( orig._data_size ),
-  _has_data( orig._has_data ),
-  _dimension( orig._dimension ),
-  _data_type( orig._data_type ) {
-  }
+      _tdms_channel( orig._tdms_channel ),
+      _number_values( orig._number_values ),
+      _data_size( orig._data_size ),
+      _has_data( orig._has_data ),
+      _dimension( orig._dimension ),
+      _data_type( orig._data_type ) { }
 
   const unsigned char* datachunk::_parse_metadata( const unsigned char* data ) {
     // Read object metadata and update object information
