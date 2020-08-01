@@ -14,7 +14,6 @@ namespace TDMS{
 
   size_t datachunk::_read_values( const unsigned char*& data, endianness e, listener * earful ) {
     if ( _data_type.is_string( ) ) {
-      log::debug( ) << "Reading string data" << std::endl;
       throw std::runtime_error( "Reading string data not yet implemented" );
       // TODO ^
     }
