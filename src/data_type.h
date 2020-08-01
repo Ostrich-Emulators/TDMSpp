@@ -70,6 +70,10 @@ namespace TDMS {
     size_t ctype_length( ) const {
       return _ctype_length;
     }
+
+    bool is_string( ) const {
+      return ( "tdsTypeString" == _name );
+    }
   private:
     std::string _name;
     size_t _length;

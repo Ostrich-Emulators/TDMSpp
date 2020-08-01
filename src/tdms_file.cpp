@@ -81,7 +81,7 @@ namespace TDMS{
       log::debug( ) << "DOUBLE FREE" << std::endl;
       return;
     }
-    if ( data_type.name() == "tdsTypeString" ) {
+    if ( data_type.is_string() ) {
       delete (std::string* ) value;
     }
     else {

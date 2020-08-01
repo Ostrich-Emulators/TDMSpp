@@ -13,6 +13,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_library(tdmspp-osem SHARED 
   src/data_type.cpp
+  src/data_extraction.cpp
   src/log.cpp
   src/tdms_file.cpp
   src/tdms_segment.cpp)
