@@ -8,12 +8,14 @@
 #include <memory>
 #include "log.hpp"
 
+#include "exports.h"
+
 namespace TDMS {
 
 	class segment;
 	class datachunk;
 
-	class data_type_t {
+	class TDMS_EXPORT data_type_t {
 	public:
 		typedef std::function<void* ( ) > parse_t;
 
@@ -93,12 +95,14 @@ namespace TDMS {
 		void _init_default_array_reader( );
 	};
 
-	class channel {
+	class TDMS_EXPORT channel {
 		friend class tdmsfile;
 		friend class segment;
 		friend class datachunk;
 	public:
 		channel( const std::string& path );
+    channel( const channel& ) = delete;
+    channel& operator=( const channel& ) = delete;
 		~channel( );
 
 		struct property {
@@ -169,10 +173,12 @@ namespace TDMS {
 				data_type_t, size_t num_vals ) = 0;
 	};
 
-	class tdmsfile {
+	class TDMS_EXPORT tdmsfile {
 		friend class segment;
 	public:
 		tdmsfile( const std::string& filename );
+    tdmsfile& operator=( const tdmsfile& ) = delete;
+    tdmsfile( const tdmsfile& ) = delete;
 		virtual ~tdmsfile( );
 
 		std::unique_ptr<channel>& operator[](const std::string& key );

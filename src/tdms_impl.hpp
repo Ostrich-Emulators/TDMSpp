@@ -6,6 +6,8 @@
 #include <functional>
 #include <memory>
 
+#include "exports.h"
+
 namespace TDMS {
 
 	typedef unsigned long long uulong;
@@ -20,12 +22,14 @@ namespace TDMS {
 		LITTLE
 	};
 
-	class segment {
+	class TDMS_EXPORT segment {
 		friend class tdmsfile;
 		friend class channel;
 		friend class datachunk;
 	public:
 		virtual ~segment( );
+    segment& operator=( const segment& ) = delete;
+    segment( const segment& ) = delete;
 
 	private:
 
@@ -65,7 +69,7 @@ namespace TDMS {
 		static const std::map<const std::string, int32_t> _toc_properties;
 	};
 
-	class datachunk {
+	class TDMS_EXPORT datachunk {
 		friend class segment;
 		friend class channel;
 	public:

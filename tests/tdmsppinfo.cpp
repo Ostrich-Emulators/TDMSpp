@@ -64,7 +64,8 @@ int main( int argc, char** argv ) {
   argc -= ( argc > 0 );
   argv += ( argc > 0 ); // Skip the program name if present
   option::Stats stats( usage, argc, argv );
-  option::Option options[stats.options_max], buffer[stats.buffer_max];
+  auto options = std::vector<option::Option>( stats.options_max);
+  auto buffer =  std::vector<option::Option>( stats.buffer_max);
   option::Parser parse( usage, argc, argv, options, buffer );
 
   if ( parse.error( ) ) {
@@ -76,7 +77,7 @@ int main( int argc, char** argv ) {
     return 0;
   }
   if ( options[DEBUG] ) {
-    TDMS::log::debug.debug_mode = true;
+    TDMS::log::setdebug( true );
   }
 
   std::vector<std::string> _filenames;

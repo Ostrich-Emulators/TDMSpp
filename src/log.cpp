@@ -1,13 +1,18 @@
 #include "log.hpp"
 
-namespace TDMS
-{
+namespace TDMS{
 
-log log::debug;
+  bool log::quiet = true;
+  std::stringstream log::silencer;
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
-const std::string log::endl ="\r\n";
-#else
-const std::string log::endl="\n";
-#endif
+  void log::setdebug( bool dbg ) {
+    quiet = !dbg;
+  }
+
+  std::ostream& log::debug( ) {
+    return ( quiet
+        ? ( std::ostream& ) silencer
+        : std::cout );
+  }
+
 }

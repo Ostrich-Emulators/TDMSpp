@@ -36,7 +36,7 @@ namespace TDMS{
             ? nosegment
             : _segments[_segments.size( ) - 1] );
 
-        log::debug << "parsing segment " << ( _segments.size( ) + 1 ) << " from offset: " << offset << log::endl;
+        log::debug() << "parsing segment " << ( _segments.size( ) + 1 ) << " from offset: " << offset << std::endl;
         std::unique_ptr<segment> s( new segment( offset, prev, this ) );
 
         maxsegmentsize = std::max( maxsegmentsize, s->_next_segment_offset );
@@ -81,7 +81,7 @@ namespace TDMS{
 
   channel::property::~property( ) {
     if ( value == nullptr ) {
-      log::debug << "DOUBLE FREE" << log::endl;
+      log::debug() << "DOUBLE FREE" << std::endl;
       return;
     }
     if ( data_type.name == "tdsTypeString" ) {
@@ -97,7 +97,7 @@ namespace TDMS{
     auto read_to = this->read_to;
     auto ctype_length = this->ctype_length;
     read_array_to = [read_to, ctype_length](const unsigned char* source, void* target, size_t number_values ) {
-      log::debug << "Doing iterative reading" << log::endl;
+      log::debug() << "Doing iterative reading" << std::endl;
       for ( size_t i = 0; i < number_values; ++i ) {
         read_to( source + ( i * ctype_length ), (void*) ( ( (char*) target ) + ( i * ctype_length ) ) );
       }

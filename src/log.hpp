@@ -1,29 +1,18 @@
 #pragma once
 
 #include <iostream>
+#include <sstream>
 
-namespace TDMS
-{
+#include "exports.h"
 
-class log
-{
-public:
-    log()
-    {
-        debug_mode = false;
-    }
-    static log debug;
-    static const std::string endl;
+namespace TDMS {
 
-    template<typename T>
-    const log& operator<< (const T& o) const
-    {
-        if(debug_mode)
-        {
-            std::cout << o;
-        }
-        return *this;
-    }
-    bool debug_mode;
-};
+  class log {
+  public:
+    static TDMS_EXPORT void setdebug( bool debug );
+    static TDMS_EXPORT std::ostream& debug();
+  private:
+    static bool quiet;
+    static std::stringstream silencer;
+  };
 }
