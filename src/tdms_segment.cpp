@@ -292,11 +292,11 @@ namespace TDMS{
     // move the file pointer to the start of this segment's data
     fseek( _parent_file->f, _startpos_in_file, SEEK_SET );
     fseek( _parent_file->f, _data_offset, SEEK_CUR );
-    auto ok = fread( _parent_file->segbuff, total_data_size, 1, _parent_file->f );
+    auto ok = fread( _parent_file->segbuff.data(), total_data_size, 1, _parent_file->f );
     if ( !ok ) {
       throw segment::read_error( );
     }
-    const unsigned char * d = _parent_file->segbuff;
+    const unsigned char * d = _parent_file->segbuff.data();
 
     for ( size_t chunk = 0; chunk < _num_chunks; ++chunk ) {
       if ( this->_toc["kTocInterleavedData"] ) {

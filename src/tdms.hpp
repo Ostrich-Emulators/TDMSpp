@@ -236,6 +236,6 @@ namespace TDMS {
 		std::map<std::string, std::unique_ptr<channel>> _channelmap;
 
 		// a memory buffer for loading segment data
-		unsigned char * segbuff;
+		std::vector<unsigned char> segbuff;
 	};
 }
