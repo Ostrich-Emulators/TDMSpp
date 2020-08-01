@@ -28,9 +28,8 @@ namespace TDMS {
     friend class channel;
     friend class datachunk;
   public:
+    segment( uulong segment_start, segment * previous_segment, tdmsfile * file );
     virtual ~segment( );
-    segment& operator=(const segment&) = delete;
-    segment( const segment& ) = delete;
 
   private:
 
@@ -45,8 +44,6 @@ namespace TDMS {
 
       read_error( ) : std::runtime_error( "Segment read error" ) { }
     };
-
-    segment( uulong segment_start, segment * previous_segment, tdmsfile * file );
 
     void _parse_metadata( const unsigned char* data, segment * previous_segment );
     void _parse_raw_data( listener * );
@@ -63,7 +60,7 @@ namespace TDMS {
     uint64_t _data_offset; // bytes of data between _startpos and the raw data
     std::vector<datachunk> _ordered_chunks;
 
-    tdmsfile* _parent_file;
+    tdmsfile * _parent_file;
 
     static const std::map<const std::string, int32_t> _toc_properties;
   };

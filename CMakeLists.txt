@@ -11,7 +11,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_library(tdmspp-osem SHARED src/log.cpp src/tdms_file.cpp src/tdms_segment.cpp)
+add_library(tdmspp-osem SHARED 
+  src/data_type.cpp
+  src/log.cpp
+  src/tdms_file.cpp
+  src/tdms_segment.cpp)
 add_executable(tdmsppinfo tests/tdmsppinfo.cpp)
 
 if ( MSVC )
@@ -45,7 +49,13 @@ configure_file(tdmspp-osem-config-version.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/t
 
 install (TARGETS tdmsppinfo DESTINATION bin)
 install (TARGETS tdmspp-osem EXPORT tdmspp-osem DESTINATION ${lib_dest})
-install (FILES src/log.hpp src/tdms.hpp src/tdms_impl.hpp src/data_extraction.hpp DESTINATION ${include_dest})
+install (FILES 
+  src/data_type.h
+  src/log.hpp
+  src/tdms.hpp
+  src/tdms_impl.hpp
+  src/data_extraction.hpp
+DESTINATION ${include_dest})
 install (EXPORT tdmspp-osem DESTINATION ${lib_dest})
 
 install (FILES tdmspp-osem-config.cmake ${CMAKE_CURRENT_BINARY_DIR}/tdmspp-osem-config-version.cmake DESTINATION ${lib_dest})

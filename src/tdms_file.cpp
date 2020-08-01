@@ -81,23 +81,12 @@ namespace TDMS{
       log::debug( ) << "DOUBLE FREE" << std::endl;
       return;
     }
-    if ( data_type.name == "tdsTypeString" ) {
+    if ( data_type.name() == "tdsTypeString" ) {
       delete (std::string* ) value;
     }
     else {
       free( value );
     }
     value = nullptr;
-  }
-
-  void data_type_t::_init_default_array_reader( ) {
-    auto read_to = this->read_to;
-    auto ctype_length = this->ctype_length;
-    read_array_to = [read_to, ctype_length](const unsigned char* source, void* target, size_t number_values ) {
-      log::debug( ) << "Doing iterative reading" << std::endl;
-      for ( size_t i = 0; i < number_values; ++i ) {
-        read_to( source + ( i * ctype_length ), (void*) ( ( (char*) target ) + ( i * ctype_length ) ) );
-      }
-    };
   }
 }

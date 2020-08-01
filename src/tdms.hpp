@@ -54,11 +54,11 @@ namespace TDMS {
     };
 
     const std::string data_type( ) const {
-      return _data_type.name;
+      return _data_type.name();
     }
 
     size_t bytes( ) const {
-      return _data_type.ctype_length * _number_values;
+      return _data_type.ctype_length() * _number_values;
     }
 
     size_t number_values( ) const {

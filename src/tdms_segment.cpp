@@ -314,7 +314,7 @@ namespace TDMS{
   }
 
   size_t datachunk::_read_values( const unsigned char*& data, endianness e, listener * earful ) {
-    if ( _data_type.name == "tdsTypeString" ) {
+    if ( _data_type.name() == "tdsTypeString" ) {
       log::debug( ) << "Reading string data" << std::endl;
       throw std::runtime_error( "Reading string data not yet implemented" );
       // TODO ^
@@ -331,7 +331,7 @@ namespace TDMS{
       earful->data( _tdms_channel->_path, data, _data_type, _number_values );
     }
 
-    return _number_values * _data_type.ctype_length;
+    return _number_values * _data_type.ctype_length();
   }
 
   datachunk::datachunk( channel * o ) :
@@ -386,7 +386,7 @@ namespace TDMS{
         _tdms_channel->_data_type = _data_type;
       }
 
-      log::debug( ) << "datatype " << _data_type.name << std::endl;
+      log::debug( ) << "datatype " << _data_type.name() << std::endl;
 
       // Read data dimension
       _dimension = read_le<uint32_t>( data );
@@ -400,12 +400,12 @@ namespace TDMS{
       data += 8;
 
       // Variable length datatypes have total length
-      if ( _data_type.name == "tdsTypeString" /*or None*/ ) {
+      if ( _data_type.name() == "tdsTypeString" /*or None*/ ) {
         _data_size = read_le<uint64_t>( data );
         data += 8;
       }
       else {
-        _data_size = ( _number_values * _dimension * _data_type.length );
+        _data_size = ( _number_values * _dimension * _data_type.length() );
       }
       log::debug( ) << "Number of elements in segment for " << _tdms_channel->_path << ": " << _number_values << std::endl;
     }
@@ -419,7 +419,7 @@ namespace TDMS{
       // Property data type
       auto prop_data_type = data_type_t::_tds_datatypes.at( read_le<uint32_t>( data ) );
       data += 4;
-      if ( prop_data_type.name == "tdsTypeString" ) {
+      if ( prop_data_type.name() == "tdsTypeString" ) {
         std::string* property = new std::string( read_string( data ) );
         log::debug( ) << "Property " << prop_name << ": " << *property << std::endl;
         data += 4 + property->size( );
@@ -430,14 +430,14 @@ namespace TDMS{
       else {
         void* prop_val = prop_data_type.read( data );
         if ( prop_val == nullptr ) {
-          throw std::runtime_error( "Unsupported datatype " + prop_data_type.name );
+          throw std::runtime_error( "Unsupported datatype " + prop_data_type.name() );
         }
 
-        data += prop_data_type.length;
+        data += prop_data_type.length();
         _tdms_channel->_properties.emplace( prop_name,
             std::shared_ptr<channel::property>(
             new channel::property( prop_data_type, prop_val ) ) );
-        log::debug( ) << "Property " << prop_name << " has been read (" << prop_data_type.name << ")" << std::endl;
+        log::debug( ) << "Property " << prop_name << " has been read (" << prop_data_type.name() << ")" << std::endl;
       }
     }
 

@@ -48,7 +48,7 @@ public:
         //
         //    }
 
-        memcpy( &vals[0], datablock, datatype.length * num_vals );
+        memcpy( &vals[0], datablock, datatype.length() * num_vals );
 
         std::cout << channelname << std::endl;
         for ( size_t i = 0; i < num_vals; i++ ) {
@@ -94,15 +94,15 @@ int main( int argc, char** argv ) {
       std::cout << o->get_path( ) << std::endl;
       if ( options[PROPERTIES] ) {
         for ( auto p : o->get_properties( ) ) {
-          TDMS::data_type_t valtype = p.second->data_type;
+          TDMS::data_type_t valtype( p.second->data_type );
 
-          if ( valtype.name == "tdsTypeString" ) {
+          if ( valtype.name() == "tdsTypeString" ) {
             std::cout << "  " << p.first << " (string): " << p.second->asString( ) << std::endl;
           }
-          else if ( valtype.name == "tdsTypeDoubleFloat" ) {
+          else if ( valtype.name() == "tdsTypeDoubleFloat" ) {
             std::cout << "  " << p.first << " (double): " << p.second->asDouble( ) << std::endl;
           }
-          else if ( valtype.name == "tdsTypeTimeStamp" ) {
+          else if ( valtype.name() == "tdsTypeTimeStamp" ) {
             time_t timer = p.second->asUTCTimestamp( );
             tm * pt = gmtime( &timer );
 
@@ -112,7 +112,7 @@ int main( int argc, char** argv ) {
             std::cout << "  " << p.first << " (timestamp): " << buffer << std::endl;
           }
           else {
-            std::cout << "  " << p.first << "(" << valtype.name << "): <unhandled>" << std::endl;
+            std::cout << "  " << p.first << "(" << valtype.name() << "): <unhandled>" << std::endl;
           }
         }
       }
