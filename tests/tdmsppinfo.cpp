@@ -130,11 +130,9 @@ int main( int argc, char** argv ) {
       listener.signal = options[SIGNAL].arg;
     }
 
-    std::unique_ptr<TDMS::listener> earman( &listener );
     for ( size_t i = 0; i < f.segments( ); i++ ) {
       //std::cout << "loading segment " << i << std::endl;
-      f.loadSegment( i, earman );
+      f.loadSegment( i, &listener );
     }
-    earman.release( );
   }
 }

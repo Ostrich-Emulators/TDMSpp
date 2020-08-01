@@ -67,7 +67,7 @@ namespace TDMS{
     {0xFFFFFFFF, data_type_t( "tdsTypeDAQmxRawData", 0, not_implemented ) }
   };
 
-  segment::segment( uulong segment_start, const std::unique_ptr<segment>& previous_segment, tdmsfile* file )
+  segment::segment( uulong segment_start, segment * previous_segment, tdmsfile * file )
       : _startpos_in_file( segment_start ), _parent_file( file ) {
 
     fseek( file->f, segment_start, SEEK_SET );
@@ -160,12 +160,12 @@ namespace TDMS{
 
   segment::~segment( ) { }
 
-  void segment::_parse_metadata( const unsigned char* data, const std::unique_ptr<segment>& previous_segment ) {
+  void segment::_parse_metadata( const unsigned char* data,segment * previous_segment ) {
     if ( !this->_toc["kTocMetaData"] ) {
       if ( !previous_segment )
         throw std::runtime_error( "kTocMetaData is set for segment, but there is no previous segment." );
-      for ( const auto& chunk : previous_segment->_ordered_chunks ) {
-        this->_ordered_chunks.push_back( std::unique_ptr<datachunk>( new datachunk( *chunk ) ) );
+      for ( const auto& chunki : previous_segment->_ordered_chunks ) {
+        this->_ordered_chunks.push_back( chunki );
       }
       _calculate_chunks( );
       return;
@@ -178,8 +178,8 @@ namespace TDMS{
       if ( !previous_segment ) {
         throw std::runtime_error( "kTocNewObjList is set for segment, but there is no previous segment." );
       }
-      for ( const auto& chunk : previous_segment->_ordered_chunks ) {
-        this->_ordered_chunks.push_back( std::unique_ptr<datachunk>( new datachunk( *chunk ) ) );
+      for ( const auto& chunky : previous_segment->_ordered_chunks ) {
+        this->_ordered_chunks.push_back( chunky );
       }
     }
 
@@ -192,7 +192,7 @@ namespace TDMS{
       data += 4 + object_path.size( );
       log::debug( ) << object_path << std::endl;
 
-      std::unique_ptr<channel>& channel = _parent_file->find_or_make_channel( object_path );
+      auto channel = _parent_file->find_or_make_channel( object_path );
       bool updating_existing = false;
 
       datachunk * segment_chunk = nullptr;
@@ -201,8 +201,8 @@ namespace TDMS{
         // Search for the same object from the previous
         // segment object list
         for ( auto& segchunk : _ordered_chunks ) {
-          if ( segchunk->_tdms_channel == channel ) {
-            segment_chunk = segchunk.get( );
+          if ( segchunk._tdms_channel == channel ) {
+            segment_chunk = &segchunk;
             updating_existing = true;
             log::debug( ) << "Updating object in segment list." << std::endl;
             break;
@@ -210,20 +210,21 @@ namespace TDMS{
         }
       }
       if ( !updating_existing ) {
-        std::unique_ptr<datachunk> newchunk;
-        if ( channel->_previous_segment_chunk ) {
+        auto newchunk = datachunk( );
+
+        if ( channel->has_previous() ) {
           log::debug( ) << "Copying previous segment object" << std::endl;
-          newchunk.reset( new datachunk( *channel->_previous_segment_chunk ) );
+          newchunk = channel->_previous_segment_chunk;
         }
         else {
-          newchunk.reset( new datachunk( channel ) );
+          newchunk = datachunk{ channel };
         }
-        this->_ordered_chunks.push_back( std::move( newchunk ) );
+        this->_ordered_chunks.push_back( newchunk );
 
-        segment_chunk = this->_ordered_chunks[this->_ordered_chunks.size( ) - 1].get( );
+        segment_chunk = &this->_ordered_chunks[this->_ordered_chunks.size( ) - 1];
       }
       data = segment_chunk->_parse_metadata( data );
-      channel->_previous_segment_chunk.reset( new datachunk( *segment_chunk ) );
+      channel->_previous_segment_chunk = *segment_chunk;
     }
     _calculate_chunks( );
   }
@@ -237,9 +238,9 @@ namespace TDMS{
 
     // Count the datasize
     long long data_size = 0;
-    for ( const auto& chunk : _ordered_chunks ) {
-      if ( chunk->_has_data ) {
-        data_size += chunk->_data_size;
+    for ( const auto& chunky : _ordered_chunks ) {
+      if ( chunky._has_data ) {
+        data_size += chunky._data_size;
       }
     }
     long long total_data_size = this->_next_segment_offset - this->_data_offset;
@@ -263,15 +264,15 @@ namespace TDMS{
 
     // Update data count for the overall tdms object
     // using the data count for this segment.
-    for ( auto& chunk : this->_ordered_chunks ) {
-      if ( chunk->_has_data ) {
-        chunk->_tdms_channel->_number_values
-            += ( chunk->_number_values * this->_num_chunks );
+    for ( auto& chunki : this->_ordered_chunks ) {
+      if ( chunki._has_data ) {
+        chunki._tdms_channel->_number_values
+            += ( chunki._number_values * this->_num_chunks );
       }
     }
   }
 
-  void segment::_parse_raw_data( std::unique_ptr<listener>& listener ) {
+  void segment::_parse_raw_data( listener * listener ) {
     if ( !this->_toc["kTocRawData"] ) {
       return;
     }
@@ -302,9 +303,9 @@ namespace TDMS{
         throw std::runtime_error( "Reading interleaved data not supported yet" );
       }
       else {
-        for ( auto& chunk : _ordered_chunks ) {
-          if ( chunk->_has_data ) {
-            size_t bytes_processed = chunk->_read_values( d, e, listener );
+        for ( auto& chunky : _ordered_chunks ) {
+          if ( chunky._has_data ) {
+            size_t bytes_processed = chunky._read_values( d, e, listener );
             d += bytes_processed;
           }
         }
@@ -312,8 +313,7 @@ namespace TDMS{
     }
   }
 
-  size_t datachunk::_read_values( const unsigned char*& data, endianness e,
-      std::unique_ptr<listener>& earful ) {
+  size_t datachunk::_read_values( const unsigned char*& data, endianness e, listener * earful ) {
     if ( _data_type.name == "tdsTypeString" ) {
       log::debug( ) << "Reading string data" << std::endl;
       throw std::runtime_error( "Reading string data not yet implemented" );
@@ -334,19 +334,11 @@ namespace TDMS{
     return _number_values * _data_type.ctype_length;
   }
 
-  /**
-   * 		const std::unique_ptr<channel>& _tdms_channel;
-    uint64_t _number_values;
-    uint64_t _data_size;
-    bool _has_data;
-    uint32_t _dimension;
-    data_type_t _data_type;
-   */
-  datachunk::datachunk( const std::unique_ptr<channel>& o ) :
+  datachunk::datachunk( channel * o ) :
       _tdms_channel( o ),
       _number_values( 0 ),
       _data_size( 0 ),
-      _has_data( true ),
+      _has_data( nullptr != o ),
       _dimension( 1 ),
       _data_type( data_type_t::_tds_datatypes.at( 0 ) ) { }
 

@@ -22,19 +22,19 @@ namespace TDMS{
     fseek( f, 0, SEEK_SET );
 
     // Now parse the segments
-    _parse_segments( f );
+    _parse_segments();
     file_contents_size = 0;
   }
 
-  void tdmsfile::_parse_segments( FILE * f ) {
+  void tdmsfile::_parse_segments() {
     uulong offset = 0;
     size_t maxsegmentsize = 0;
     // First read the metadata of the segments
     while ( offset < file_contents_size - 8 * 4 ) {
       try {
-        std::unique_ptr<segment>& prev = ( _segments.empty( )
-            ? nosegment
-            : _segments[_segments.size( ) - 1] );
+        auto prev = ( _segments.empty( )
+            ? nullptr
+            : _segments[_segments.size( ) - 1].get() );
 
         log::debug( ) << "parsing segment " << ( _segments.size( ) + 1 ) << " from offset: " << offset << std::endl;
         std::unique_ptr<segment> s( new segment( offset, prev, this ) );
@@ -52,19 +52,19 @@ namespace TDMS{
     segbuff.reserve( maxsegmentsize );
   }
 
-  void tdmsfile::loadSegment( size_t segnum, std::unique_ptr<listener>& listener ) {
+  void tdmsfile::loadSegment( size_t segnum, listener * listener ) {
     this->_segments[segnum]->_parse_raw_data( listener );
   }
 
-  std::unique_ptr<channel>& tdmsfile::operator[](const std::string& key ) {
-    return _channelmap.at( key );
+  channel * tdmsfile::operator[](const std::string& key ) {
+    return _channelmap.at( key ).get( );
   }
 
-  std::unique_ptr<channel>& tdmsfile::find_or_make_channel( const std::string& key ) {
+  channel * tdmsfile::find_or_make_channel( const std::string& key ) {
     if ( 0 == _channelmap.count( key ) ) {
-      _channelmap.insert( std::make_pair( key, std::unique_ptr<channel>( new channel( key ) ) ) );
+      _channelmap.insert( std::make_pair( key, std::make_unique<channel>( key ) ) );
     }
-    return _channelmap.at( key );
+    return _channelmap.at( key ).get( );
   }
 
   tdmsfile::~tdmsfile( ) {

@@ -6,6 +6,7 @@
 #include <functional>
 #include <memory>
 
+#include "data_type.h"
 #include "exports.h"
 
 namespace TDMS {
@@ -45,10 +46,10 @@ namespace TDMS {
       read_error( ) : std::runtime_error( "Segment read error" ) { }
     };
 
-    segment( uulong segment_start, const std::unique_ptr<segment>& previous_segment, tdmsfile* file );
+    segment( uulong segment_start, segment * previous_segment, tdmsfile * file );
 
-    void _parse_metadata( const unsigned char* data, const std::unique_ptr<segment>& previous_segment );
-    void _parse_raw_data( std::unique_ptr<listener>& );
+    void _parse_metadata( const unsigned char* data, segment * previous_segment );
+    void _parse_raw_data( listener * );
     void _calculate_chunks( );
 
     // Probably a map using enums performs faster.
@@ -60,7 +61,7 @@ namespace TDMS {
     size_t _num_chunks;
     uulong _startpos_in_file;
     uint64_t _data_offset; // bytes of data between _startpos and the raw data
-    std::vector<std::unique_ptr<datachunk>> _ordered_chunks;
+    std::vector<datachunk> _ordered_chunks;
 
     tdmsfile* _parent_file;
 
@@ -72,12 +73,13 @@ namespace TDMS {
     friend class channel;
   public:
     datachunk( const datachunk& o );
-  private:
-    datachunk( const std::unique_ptr<channel>& o );
-    const unsigned char* _parse_metadata( const unsigned char* data );
-    size_t _read_values( const unsigned char*& data, endianness e, std::unique_ptr<listener>& );
+    datachunk( channel * o = nullptr );
 
-    const std::unique_ptr<channel>& _tdms_channel;
+  private:
+    const unsigned char* _parse_metadata( const unsigned char* data );
+    size_t _read_values( const unsigned char*& data, endianness e, listener * );
+
+    channel * _tdms_channel;
     uint64_t _number_values;
     uint64_t _data_size;
     bool _has_data;
