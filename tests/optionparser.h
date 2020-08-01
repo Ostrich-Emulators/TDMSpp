@@ -1058,7 +1058,7 @@ public:
    * @brief Creates a new Parser and immediately parses the given argument vector.
    * @copydetails parse()
    */
-  Parser(bool gnu, const Descriptor usage[], int argc, const char** argv, std::vector<Option> options, std::vector<Option> buffer,
+  Parser(bool gnu, const Descriptor usage[], int argc, const char** argv, Option * options, Option * buffer,
          int min_abbr_len = 0, bool single_minus_longopt = false, int bufmax = -1) :
       op_count(0), nonop_count(0), nonop_args(0), err(false)
   {
@@ -1066,7 +1066,7 @@ public:
   }
 
   //! @brief Parser(...) with non-const argv.
-  Parser(bool gnu, const Descriptor usage[], int argc, char** argv,  std::vector<Option> options, std::vector<Option> buffer,
+  Parser(bool gnu, const Descriptor usage[], int argc, char** argv,  Option * options, Option * buffer,
          int min_abbr_len = 0, bool single_minus_longopt = false, int bufmax = -1) :
       op_count(0), nonop_count(0), nonop_args(0), err(false)
   {
@@ -1074,7 +1074,7 @@ public:
   }
 
   //! @brief POSIX Parser(...) (gnu==false).
-  Parser(const Descriptor usage[], int argc, const char** argv,  std::vector<Option> options, std::vector<Option> buffer, int min_abbr_len = 0,
+  Parser(const Descriptor usage[], int argc, const char** argv,  Option * options, Option * buffer, int min_abbr_len = 0,
          bool single_minus_longopt = false, int bufmax = -1) :
       op_count(0), nonop_count(0), nonop_args(0), err(false)
   {
@@ -1082,7 +1082,7 @@ public:
   }
 
   //! @brief POSIX Parser(...) (gnu==false) with non-const argv.
-  Parser(const Descriptor usage[], int argc, char** argv,  std::vector<Option> options, std::vector<Option> buffer, int min_abbr_len = 0,
+  Parser(const Descriptor usage[], int argc, char** argv,  Option * options, Option * buffer, int min_abbr_len = 0,
          bool single_minus_longopt = false, int bufmax = -1) :
       op_count(0), nonop_count(0), nonop_args(0), err(false)
   {
@@ -1145,25 +1145,25 @@ public:
    * @c options[]. You can get the linked list in options from a buffer object via something like
    * @c options[buffer[i].index()].
    */
-  void parse(bool gnu, const Descriptor usage[], int argc, const char** argv,  std::vector<Option> options, std::vector<Option> buffer,
+  void parse(bool gnu, const Descriptor usage[], int argc, const char** argv,  Option * options, Option * buffer,
              int min_abbr_len = 0, bool single_minus_longopt = false, int bufmax = -1);
 
   //! @brief parse() with non-const argv.
-  void parse(bool gnu, const Descriptor usage[], int argc, char** argv,  std::vector<Option> options, std::vector<Option> buffer,
+  void parse(bool gnu, const Descriptor usage[], int argc, char** argv,  Option * options, Option * buffer,
              int min_abbr_len = 0, bool single_minus_longopt = false, int bufmax = -1)
   {
     parse(gnu, usage, argc, (const char**) argv, options, buffer, min_abbr_len, single_minus_longopt, bufmax);
   }
 
   //! @brief POSIX parse() (gnu==false).
-  void parse(const Descriptor usage[], int argc, const char** argv,  std::vector<Option> options, std::vector<Option> buffer,
+  void parse(const Descriptor usage[], int argc, const char** argv,  Option * options, Option * buffer,
              int min_abbr_len = 0, bool single_minus_longopt = false, int bufmax = -1)
   {
     parse(false, usage, argc, argv, options, buffer, min_abbr_len, single_minus_longopt, bufmax);
   }
 
   //! @brief POSIX parse() (gnu==false) with non-const argv.
-  void parse(const Descriptor usage[], int argc, char** argv,  std::vector<Option> options, std::vector<Option> buffer, int min_abbr_len = 0,
+  void parse(const Descriptor usage[], int argc, char** argv,  Option * options, Option * buffer, int min_abbr_len = 0,
              bool single_minus_longopt = false, int bufmax = -1)
   {
     parse(false, usage, argc, (const char**) argv, options, buffer, min_abbr_len, single_minus_longopt, bufmax);
@@ -1428,8 +1428,8 @@ public:
    * @param buffer_ each Option is appended to this array as long as there's a free slot.
    * @param bufmax_ number of slots in @c buffer_. @c -1 means "large enough".
    */
-  StoreOptionAction(Parser& parser_,  std::vector<Option> options_, std::vector<Option> buffer_, int bufmax_) :
-      parser(parser_), options(options_.data()), buffer(buffer_.data()), bufmax(bufmax_)
+  StoreOptionAction(Parser& parser_,  Option * options_, Option * buffer_, int bufmax_) :
+      parser(parser_), options(options_), buffer(buffer_), bufmax(bufmax_)
   {
     // find first empty slot in buffer (if any)
     int bufidx = 0;
@@ -1473,8 +1473,8 @@ public:
   }
 };
 
-inline void Parser::parse(bool gnu, const Descriptor usage[], int argc, const char** argv,  std::vector<Option> options,
-    std::vector<Option> buffer, int min_abbr_len, bool single_minus_longopt, int bufmax)
+inline void Parser::parse(bool gnu, const Descriptor usage[], int argc, const char** argv,  Option * options,
+    Option * buffer, int min_abbr_len, bool single_minus_longopt, int bufmax)
 {
   StoreOptionAction action(*this, options, buffer, bufmax);
   err = !workhorse(gnu, usage, argc, argv, action, single_minus_longopt, true, min_abbr_len);

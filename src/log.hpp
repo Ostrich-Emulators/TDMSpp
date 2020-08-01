@@ -1,11 +1,22 @@
 #pragma once
 
 #include <iostream>
-#include <sstream>
 
 #include "exports.h"
 
 namespace TDMS {
+
+  class nullbuff : public std::streambuf {
+  public:
+      int overflow(int c) { return c; }
+  };
+
+  class nullstream : public std::ostream {
+  public:
+      nullstream() : std::ostream(&buffer) {}
+  private:
+      nullbuff buffer;
+  };
 
   class log {
   public:
@@ -13,6 +24,6 @@ namespace TDMS {
     static TDMS_EXPORT std::ostream& debug();
   private:
     static bool quiet;
-    static std::stringstream silencer;
+    static nullstream silencer;
   };
 }

@@ -3,7 +3,7 @@
 namespace TDMS{
 
   bool log::quiet = true;
-  std::stringstream log::silencer;
+  nullstream log::silencer;
 
   void log::setdebug( bool dbg ) {
     quiet = !dbg;
@@ -11,7 +11,7 @@ namespace TDMS{
 
   std::ostream& log::debug( ) {
     return ( quiet
-        ? ( std::ostream& ) silencer
+        ? silencer
         : std::cout );
   }
 

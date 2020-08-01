@@ -136,15 +136,26 @@ namespace TDMS{
     this->_next_segment_offset = next_segment_offset + 28;
 
     // prepare enough space to load the metadata into memory
-    unsigned char * segment_metadata = (unsigned char*) malloc( raw_data_offset );
+    auto segment_metadata = std::vector<unsigned char>( raw_data_offset );
     // read the metadata into memory (the file stream is currently pointing to
     // the start of the metadata)
-    ok = fread( segment_metadata, raw_data_offset, 1, file->f );
+    ok = fread( segment_metadata.data(), 1, raw_data_offset, file->f );
     if ( !ok ) {
       throw segment::read_error( );
     }
-    _parse_metadata( segment_metadata, previous_segment );
-    free( segment_metadata );
+
+    if (ok != raw_data_offset) {
+        log::debug() << "want to read " << raw_data_offset << ", but only got: " << ok << std::endl;
+
+        auto newdata = std::vector<unsigned char>(raw_data_offset-ok);
+        auto ok2=fread(newdata.data(), 1, raw_data_offset-ok, file->f);
+
+        if (!ok2||ok2<raw_data_offset-ok) {
+            log::debug() << "Double BAM! want to read " << raw_data_offset-ok << ", but only got: " << ok2 << std::endl;
+        }
+    }
+
+    _parse_metadata( segment_metadata.data(), previous_segment );
   }
 
   segment::~segment( ) {
@@ -272,7 +283,7 @@ namespace TDMS{
       return;
     }
 
-    endianness e = LITTLE;
+    endianness e = endianness::LITTLE;
     if ( this->_toc["kTocBigEndian"] ) {
       e = BIG;
       throw std::runtime_error( "Big endian reading not yet implemented" );

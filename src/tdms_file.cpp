@@ -13,7 +13,7 @@ namespace TDMS{
   typedef unsigned long long uulong;
 
   tdmsfile::tdmsfile( const std::string& filename ) : filename( filename ) {
-    f = fopen( filename.c_str( ), "r" );
+    f = fopen( filename.c_str( ), "rb" );
     if ( !f ) {
       throw std::runtime_error( "File \"" + filename + "\" could not be opened" );
     }

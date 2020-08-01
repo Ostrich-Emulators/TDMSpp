@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
 
-set(CMAKE_CXX_COMPILER /usr/bin/g++)
 set(LIBVERSION 2.0.0)
 project(tdmspp-osem VERSION ${LIBVERSION} LANGUAGES CXX)
 
@@ -15,10 +14,15 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_library(tdmspp-osem SHARED src/log.cpp src/tdms_file.cpp src/tdms_segment.cpp)
 add_executable(tdmsppinfo tests/tdmsppinfo.cpp)
 
-target_compile_options(tdmspp-osem PRIVATE -Wall)
-target_compile_options(tdmsppinfo PRIVATE -Wall)
-
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
+if ( MSVC )
+    target_compile_options(tdmspp-osem PRIVATE /W4)
+    target_compile_options(tdmsppinfo PRIVATE /W4)
+else()
+    set(CMAKE_CXX_COMPILER /usr/bin/g++)
+    target_compile_options(tdmspp-osem PRIVATE -Wall)
+    target_compile_options(tdmsppinfo PRIVATE -Wall)
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
+endif()
 
 set(include_dest include/tdmspp-osem-${LIBVERSION})
 set(lib_dest lib/tdmspp-osem-${LIBVERSION})

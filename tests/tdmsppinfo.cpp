@@ -66,7 +66,7 @@ int main( int argc, char** argv ) {
   option::Stats stats( usage, argc, argv );
   auto options = std::vector<option::Option>( stats.options_max);
   auto buffer =  std::vector<option::Option>( stats.buffer_max);
-  option::Parser parse( usage, argc, argv, options, buffer );
+  option::Parser parse( usage, argc, argv, options.data(), buffer.data() );
 
   if ( parse.error( ) ) {
     std::cerr << "parse.error() != 0" << std::endl;
