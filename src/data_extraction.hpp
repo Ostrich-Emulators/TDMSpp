@@ -3,7 +3,6 @@
 #ifndef EXTRACTION_H
 #define EXTRACTION_H
 
-#include <cstdint>
 #include <ctime>
 #include <string>
 #include "log.hpp"
