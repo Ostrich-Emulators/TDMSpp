@@ -1,10 +1,8 @@
 #include <iostream>
 #include <vector>
-
-#include <tdms.hpp>
-#include <log.hpp>
 #include <iomanip>
 
+#include <tdmspp.h>
 #include "optionparser.h"
 
 // Define options

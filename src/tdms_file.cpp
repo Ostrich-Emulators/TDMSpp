@@ -5,9 +5,11 @@
 #include <algorithm>
 #include <map>
 
-#include "tdms.hpp"
+#include "tdms_file.hpp"
 #include "log.hpp"
-#include "tdms_impl.hpp"
+#include "tdms_segment.hpp"
+#include "tdms_channel.h"
+#include "tdms_exceptions.h"
 
 namespace TDMS{
   typedef unsigned long long uulong;
@@ -44,7 +46,7 @@ namespace TDMS{
         offset += s->_next_segment_offset;
         _segments.push_back( std::move( s ) );
       }
-      catch ( segment::no_segment_error& e ) {
+      catch ( no_segment_error& e ) {
         // Last segment was parsed.
         break;
       }

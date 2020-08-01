@@ -2,48 +2,28 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <cstdint>
-#include <functional>
 #include <memory>
 
 #include "data_type.h"
 #include "exports.h"
+#include "datachunk.h"
 
 namespace TDMS {
 
   typedef unsigned long long uulong;
 
   class tdmsfile;
-  class channel;
-  class datachunk;
   class listener;
-
-  enum endianness {
-    BIG,
-    LITTLE
-  };
 
   class TDMS_EXPORT segment {
     friend class tdmsfile;
-    friend class channel;
     friend class datachunk;
+
   public:
     segment( uulong segment_start, segment * previous_segment, tdmsfile * file );
     virtual ~segment( );
 
   private:
-
-    class no_segment_error : public std::runtime_error {
-    public:
-
-      no_segment_error( ) : std::runtime_error( "Not a segment" ) { }
-    };
-
-    class read_error : public std::runtime_error {
-    public:
-
-      read_error( ) : std::runtime_error( "Segment read error" ) { }
-    };
 
     void _parse_metadata( const unsigned char* data, segment * previous_segment );
     void _parse_raw_data( listener * );
@@ -63,24 +43,5 @@ namespace TDMS {
     tdmsfile * _parent_file;
 
     static const std::map<const std::string, int32_t> _toc_properties;
-  };
-
-  class TDMS_EXPORT datachunk {
-    friend class segment;
-    friend class channel;
-  public:
-    datachunk( const datachunk& o );
-    datachunk( channel * o = nullptr );
-
-  private:
-    const unsigned char* _parse_metadata( const unsigned char* data );
-    size_t _read_values( const unsigned char*& data, endianness e, listener * );
-
-    channel * _tdms_channel;
-    uint64_t _number_values;
-    uint64_t _data_size;
-    bool _has_data;
-    uint32_t _dimension;
-    data_type_t _data_type;
   };
 }

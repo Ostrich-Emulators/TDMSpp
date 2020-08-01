@@ -14,7 +14,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_library(tdmspp-osem SHARED 
   src/data_type.cpp
   src/data_extraction.cpp
+  src/datachunk.cpp
   src/log.cpp
+  src/tdms_channel.cpp
   src/tdms_file.cpp
   src/tdms_segment.cpp)
 add_executable(tdmsppinfo tests/tdmsppinfo.cpp)
@@ -52,9 +54,14 @@ install (TARGETS tdmsppinfo DESTINATION bin)
 install (TARGETS tdmspp-osem EXPORT tdmspp-osem DESTINATION ${lib_dest})
 install (FILES 
   src/data_type.h
+  src/tdms_listener.h
+  src/datachunk.h
   src/log.hpp
-  src/tdms.hpp
-  src/tdms_impl.hpp
+  src/tdmspp.h
+  src/tdms_channel.h
+  src/tdms_exceptons.h
+  src/tdms_file.hpp
+  src/tdms_segment.hpp
   src/data_extraction.hpp
 DESTINATION ${include_dest})
 install (EXPORT tdmspp-osem DESTINATION ${lib_dest})
