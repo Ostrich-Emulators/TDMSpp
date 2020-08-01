@@ -68,7 +68,7 @@ namespace TDMS{
   };
 
   segment::segment( uulong segment_start, const std::unique_ptr<segment>& previous_segment, tdmsfile* file )
-  : _startpos_in_file( segment_start ), _parent_file( file ) {
+      : _startpos_in_file( segment_start ), _parent_file( file ) {
 
     fseek( file->f, segment_start, SEEK_SET );
 
@@ -84,15 +84,15 @@ namespace TDMS{
     ok = fread( justread, sizeof ( char ), 4, file->f );
     int32_t toc_mask = read_le<int32_t>( (const unsigned char *) &justread[0] );
 
-    log::debug() << "Properties:";
+    log::debug( ) << "Properties:";
     for ( auto prop : segment::_toc_properties ) {
       _toc[prop.first] = ( toc_mask & prop.second ) != 0;
 
       if ( _toc[prop.first] ) {
-        log::debug() << "\t" << prop.first;
+        log::debug( ) << "\t" << prop.first;
       }
     }
-    log::debug() << std::endl;
+    log::debug( ) << std::endl;
 
     // Four bytes for version number
     ok = fread( justread, sizeof ( char ), 4, file->f );
@@ -101,7 +101,7 @@ namespace TDMS{
     }
 
     int32_t version = read_le<int32_t>( (const unsigned char *) &justread[0] );
-    log::debug() << "Version: " << version << std::endl;
+    log::debug( ) << "Version: " << version << std::endl;
     switch ( version ) {
       case 4712:
       case 4713:
@@ -127,7 +127,7 @@ namespace TDMS{
     // we'll add 4+4+4+8+8 = 28 bytes to our offsets
     // because we've read 28 bytes from the start of the segment
     this->_data_offset = raw_data_offset + 28; // bytes from start of the segment to data
-    log::debug() << "raw data starts " << _data_offset << " bytes after the start of segment" << std::endl;
+    log::debug( ) << "raw data starts " << _data_offset << " bytes after the start of segment" << std::endl;
 
 
     if ( next_segment_offset == 0xFFFFFFFFFFFFFFFF ) { // That's 8 times FF, or 16 F's, aka the maximum unsigned int64_t.
@@ -139,27 +139,26 @@ namespace TDMS{
     auto segment_metadata = std::vector<unsigned char>( raw_data_offset );
     // read the metadata into memory (the file stream is currently pointing to
     // the start of the metadata)
-    ok = fread( segment_metadata.data(), 1, raw_data_offset, file->f );
+    ok = fread( segment_metadata.data( ), 1, raw_data_offset, file->f );
     if ( !ok ) {
       throw segment::read_error( );
     }
 
-    if (ok != raw_data_offset) {
-        log::debug() << "want to read " << raw_data_offset << ", but only got: " << ok << std::endl;
+    if ( ok != raw_data_offset ) {
+      log::debug( ) << "want to read " << raw_data_offset << ", but only got: " << ok << std::endl;
 
-        auto newdata = std::vector<unsigned char>(raw_data_offset-ok);
-        auto ok2=fread(newdata.data(), 1, raw_data_offset-ok, file->f);
+      auto newdata = std::vector<unsigned char>( raw_data_offset - ok );
+      auto ok2 = fread( newdata.data( ), 1, raw_data_offset - ok, file->f );
 
-        if (!ok2||ok2<raw_data_offset-ok) {
-            log::debug() << "Double BAM! want to read " << raw_data_offset-ok << ", but only got: " << ok2 << std::endl;
-        }
+      if ( !ok2 || ok2 < raw_data_offset - ok ) {
+        log::debug( ) << "Double BAM! want to read " << raw_data_offset - ok << ", but only got: " << ok2 << std::endl;
+      }
     }
 
-    _parse_metadata( segment_metadata.data(), previous_segment );
+    _parse_metadata( segment_metadata.data( ), previous_segment );
   }
 
-  segment::~segment( ) {
-  }
+  segment::~segment( ) { }
 
   void segment::_parse_metadata( const unsigned char* data, const std::unique_ptr<segment>& previous_segment ) {
     if ( !this->_toc["kTocMetaData"] ) {
@@ -191,7 +190,7 @@ namespace TDMS{
     for ( int i = 0; i < num_chunks; ++i ) {
       std::string object_path = read_string( data );
       data += 4 + object_path.size( );
-      log::debug() << object_path << std::endl;
+      log::debug( ) << object_path << std::endl;
 
       std::unique_ptr<channel>& channel = _parent_file->find_or_make_channel( object_path );
       bool updating_existing = false;
@@ -205,7 +204,7 @@ namespace TDMS{
           if ( segchunk->_tdms_channel == channel ) {
             segment_chunk = segchunk.get( );
             updating_existing = true;
-            log::debug() << "Updating object in segment list." << std::endl;
+            log::debug( ) << "Updating object in segment list." << std::endl;
             break;
           }
         }
@@ -213,7 +212,7 @@ namespace TDMS{
       if ( !updating_existing ) {
         std::unique_ptr<datachunk> newchunk;
         if ( channel->_previous_segment_chunk ) {
-          log::debug() << "Copying previous segment object" << std::endl;
+          log::debug( ) << "Copying previous segment object" << std::endl;
           newchunk.reset( new datachunk( *channel->_previous_segment_chunk ) );
         }
         else {
@@ -278,7 +277,7 @@ namespace TDMS{
     }
 
     size_t total_data_size = _next_segment_offset - _data_offset;
-    if( 0 == total_data_size ){
+    if ( 0 == total_data_size ) {
       // no data in this segment, so nothing to do
       return;
     }
@@ -292,11 +291,11 @@ namespace TDMS{
     // move the file pointer to the start of this segment's data
     fseek( _parent_file->f, _startpos_in_file, SEEK_SET );
     fseek( _parent_file->f, _data_offset, SEEK_CUR );
-    auto ok = fread( _parent_file->segbuff.data(), total_data_size, 1, _parent_file->f );
+    auto ok = fread( _parent_file->segbuff.data( ), total_data_size, 1, _parent_file->f );
     if ( !ok ) {
       throw segment::read_error( );
     }
-    const unsigned char * d = _parent_file->segbuff.data();
+    const unsigned char * d = _parent_file->segbuff.data( );
 
     for ( size_t chunk = 0; chunk < _num_chunks; ++chunk ) {
       if ( this->_toc["kTocInterleavedData"] ) {
@@ -316,7 +315,7 @@ namespace TDMS{
   size_t datachunk::_read_values( const unsigned char*& data, endianness e,
       std::unique_ptr<listener>& earful ) {
     if ( _data_type.name == "tdsTypeString" ) {
-      log::debug() << "Reading string data" << std::endl;
+      log::debug( ) << "Reading string data" << std::endl;
       throw std::runtime_error( "Reading string data not yet implemented" );
       // TODO ^
     }
@@ -344,37 +343,35 @@ namespace TDMS{
     data_type_t _data_type;
    */
   datachunk::datachunk( const std::unique_ptr<channel>& o ) :
-  _tdms_channel( o ),
-  _number_values( 0 ),
-  _data_size( 0 ),
-  _has_data( true ),
-  _dimension( 1 ),
-  _data_type( data_type_t::_tds_datatypes.at( 0 ) ) {
-  }
+      _tdms_channel( o ),
+      _number_values( 0 ),
+      _data_size( 0 ),
+      _has_data( true ),
+      _dimension( 1 ),
+      _data_type( data_type_t::_tds_datatypes.at( 0 ) ) { }
 
   datachunk::datachunk( const datachunk& orig ) :
-  _tdms_channel( orig._tdms_channel ),
-  _number_values( orig._number_values ),
-  _data_size( orig._data_size ),
-  _has_data( orig._has_data ),
-  _dimension( orig._dimension ),
-  _data_type( orig._data_type ) {
-  }
+      _tdms_channel( orig._tdms_channel ),
+      _number_values( orig._number_values ),
+      _data_size( orig._data_size ),
+      _has_data( orig._has_data ),
+      _dimension( orig._dimension ),
+      _data_type( orig._data_type ) { }
 
   const unsigned char* datachunk::_parse_metadata( const unsigned char* data ) {
     // Read object metadata and update object information
     uint32_t raw_data_index = read_le<uint32_t>( data );
     data += 4;
 
-    log::debug() << "Reading metadata for object " << _tdms_channel->_path << std::endl
+    log::debug( ) << "Reading metadata for object " << _tdms_channel->_path << std::endl
         << "raw_data_index: " << raw_data_index << std::endl;
 
     if ( raw_data_index == 0xFFFFFFFF ) {
-      log::debug() << "Object has no data" << std::endl;
+      log::debug( ) << "Object has no data" << std::endl;
       _has_data = false;
     }
     else if ( raw_data_index == 0x00000000 ) {
-      log::debug() << "Object has same data structure as in the previous segment" << std::endl;
+      log::debug( ) << "Object has same data structure as in the previous segment" << std::endl;
       _has_data = true;
     }
     else {
@@ -397,13 +394,13 @@ namespace TDMS{
         _tdms_channel->_data_type = _data_type;
       }
 
-      log::debug() << "datatype " << _data_type.name << std::endl;
+      log::debug( ) << "datatype " << _data_type.name << std::endl;
 
       // Read data dimension
       _dimension = read_le<uint32_t>( data );
       data += 4;
       if ( _dimension != 1 ) {
-        log::debug() << "Warning: dimension != 1" << std::endl;
+        log::debug( ) << "Warning: dimension != 1" << std::endl;
       }
 
       // Read the number of values
@@ -418,12 +415,12 @@ namespace TDMS{
       else {
         _data_size = ( _number_values * _dimension * _data_type.length );
       }
-      log::debug() << "Number of elements in segment for " << _tdms_channel->_path << ": " << _number_values << std::endl;
+      log::debug( ) << "Number of elements in segment for " << _tdms_channel->_path << ": " << _number_values << std::endl;
     }
     // Read data properties
     uint32_t num_properties = read_le<uint32_t>( data );
     data += 4;
-    log::debug() << "Reading " << num_properties << " properties" << std::endl;
+    log::debug( ) << "Reading " << num_properties << " properties" << std::endl;
     for ( size_t i = 0; i < num_properties; ++i ) {
       std::string prop_name = read_string( data );
       data += 4 + prop_name.size( );
@@ -432,7 +429,7 @@ namespace TDMS{
       data += 4;
       if ( prop_data_type.name == "tdsTypeString" ) {
         std::string* property = new std::string( read_string( data ) );
-        log::debug() << "Property " << prop_name << ": " << *property << std::endl;
+        log::debug( ) << "Property " << prop_name << ": " << *property << std::endl;
         data += 4 + property->size( );
         _tdms_channel->_properties.emplace( prop_name,
             std::shared_ptr<channel::property>(
@@ -448,7 +445,7 @@ namespace TDMS{
         _tdms_channel->_properties.emplace( prop_name,
             std::shared_ptr<channel::property>(
             new channel::property( prop_data_type, prop_val ) ) );
-        log::debug() << "Property " << prop_name << " has been read (" << prop_data_type.name << ")" << std::endl;
+        log::debug( ) << "Property " << prop_name << " has been read (" << prop_data_type.name << ")" << std::endl;
       }
     }
 
