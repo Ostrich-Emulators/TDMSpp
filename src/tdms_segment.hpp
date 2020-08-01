@@ -15,14 +15,13 @@ namespace TDMS {
   class tdmsfile;
   class listener;
 
-  class TDMS_EXPORT segment {
+  class segment {
     friend class tdmsfile;
     friend class datachunk;
 
   public:
-    segment( uulong segment_start, segment * previous_segment, tdmsfile * file );
-    virtual ~segment( );
-
+    TDMS_EXPORT segment( uulong segment_start, segment * previous_segment, tdmsfile * file );
+    TDMS_EXPORT virtual ~segment( );
   private:
 
     void _parse_metadata( const unsigned char* data, segment * previous_segment );

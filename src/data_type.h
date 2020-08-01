@@ -20,58 +20,58 @@
 
 namespace TDMS {
 
-  class TDMS_EXPORT data_type_t {
+  class data_type_t {
   public:
     typedef std::function<void* ( ) > parse_t;
 
-    data_type_t( );
+    TDMS_EXPORT data_type_t( );
 
-    data_type_t( const data_type_t& dt );
+    TDMS_EXPORT data_type_t( const data_type_t& dt );
 
-    data_type_t( const std::string& _name, const size_t _len,
+    TDMS_EXPORT data_type_t( const std::string& _name, const size_t _len,
         std::function<void (const unsigned char*, void*) > reader );
 
-    data_type_t( const std::string& _name,
+    TDMS_EXPORT data_type_t( const std::string& _name,
         const size_t _len,
         std::function<void (const unsigned char*, void*) > reader,
         std::function<void (const unsigned char*, void*, size_t ) > array_reader );
 
-    data_type_t( const std::string& _name, const size_t _len, const size_t _ctype_len,
+    TDMS_EXPORT data_type_t( const std::string& _name, const size_t _len, const size_t _ctype_len,
         std::function<void (const unsigned char*, void*) > reader );
 
-    bool is_valid( ) const {
+    TDMS_EXPORT bool is_valid( ) const {
       return (_name != "INVALID TYPE" );
     }
 
-    bool operator==(const data_type_t& dt ) const {
+    TDMS_EXPORT bool operator==(const data_type_t& dt ) const {
       return (_name == dt._name );
     }
 
-    bool operator!=(const data_type_t& dt ) const {
+    TDMS_EXPORT bool operator!=(const data_type_t& dt ) const {
       return !( *this == dt );
     }
 
-    void* read( const unsigned char* data ) {
+    TDMS_EXPORT void* read( const unsigned char* data ) {
       void* d = malloc( _ctype_length );
       read_to( data, d );
       return d;
     }
 
-    static const std::map<uint32_t, const data_type_t> _tds_datatypes;
+    TDMS_EXPORT static const std::map<uint32_t, const data_type_t> _tds_datatypes;
 
-    const std::string& name( ) const {
+    TDMS_EXPORT const std::string& name( ) const {
       return _name;
     }
 
-    size_t length( ) const {
+    TDMS_EXPORT size_t length( ) const {
       return _length;
     }
 
-    size_t ctype_length( ) const {
+    TDMS_EXPORT size_t ctype_length( ) const {
       return _ctype_length;
     }
 
-    bool is_string( ) const {
+    TDMS_EXPORT bool is_string( ) const {
       return ( "tdsTypeString" == _name );
     }
   private:

@@ -24,62 +24,63 @@ namespace TDMS {
   class segment;
   class datachunk;
   
-  class TDMS_EXPORT channel {
+  class channel {
     friend class tdmsfile;
     friend class segment;
     friend class datachunk;
   public:
-    channel( const std::string& path );
-    channel( const channel& ) = delete;
-    channel& operator=(const channel&) = delete;
-    ~channel( );
+      TDMS_EXPORT channel( const std::string& path );
+      TDMS_EXPORT channel( const channel& ) = delete;
+      TDMS_EXPORT channel& operator=(const channel&) = delete;
+      TDMS_EXPORT virtual ~channel( );
 
     struct property {
 
-      property( const data_type_t& dt, void* val ) : data_type( dt ), value( val ) { }
-      property( const property& p ) = delete;
-      const data_type_t data_type;
-      void* value;
-      virtual ~property( );
+      TDMS_EXPORT property( const data_type_t& dt, void* val ) : data_type( dt ), value( val ) { }
+      TDMS_EXPORT property( const property& p ) = delete;
+      TDMS_EXPORT virtual ~property( );
 
-      double asDouble( ) const {
+      TDMS_EXPORT double asDouble( ) const {
         return *( (double*) value );
       }
 
-      int asInt( ) const {
+      TDMS_EXPORT int asInt( ) const {
         return *( (int*) value );
       }
 
-      const std::string& asString( ) const {
+      TDMS_EXPORT const std::string& asString( ) const {
         return *( ( std::string* ) value );
       }
 
-      time_t asUTCTimestamp( ) const {
+      TDMS_EXPORT time_t asUTCTimestamp( ) const {
         return *( (time_t*) value );
       }
+
+      const data_type_t data_type;
+      void* value;
     };
 
-    const std::string data_type( ) const {
+    TDMS_EXPORT std::string data_type( ) const {
       return _data_type.name( );
     }
 
-    size_t bytes( ) const {
+    TDMS_EXPORT size_t bytes( ) const {
       return _data_type.ctype_length( ) * _number_values;
     }
 
-    size_t number_values( ) const {
+    TDMS_EXPORT size_t number_values( ) const {
       return _number_values;
     }
 
-    const std::string& get_path( ) const {
+    TDMS_EXPORT const std::string& get_path( ) const {
       return _path;
     }
 
-    std::map<std::string, std::shared_ptr<property>> get_properties( ) const {
+    TDMS_EXPORT std::map<std::string, std::shared_ptr<property>> get_properties( ) const {
       return _properties;
     }
 
-    bool has_previous( ) const {
+    TDMS_EXPORT bool has_previous( ) const {
       return ( nullptr != _previous_segment_chunk._tdms_channel );
     }
   private:

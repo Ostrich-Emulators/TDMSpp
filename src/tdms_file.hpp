@@ -17,38 +17,38 @@ namespace TDMS {
   class datachunk;
   class channel;
 
-  class TDMS_EXPORT tdmsfile {
+  class tdmsfile {
     friend class segment;
   public:
-    tdmsfile( const std::string& filename );
-    tdmsfile& operator=(const tdmsfile&) = delete;
-    tdmsfile( const tdmsfile& ) = delete;
-    virtual ~tdmsfile( );
+      TDMS_EXPORT tdmsfile( const std::string& filename );
+      TDMS_EXPORT tdmsfile& operator=(const tdmsfile&) = delete;
+      TDMS_EXPORT tdmsfile( const tdmsfile& ) = delete;
+      TDMS_EXPORT virtual ~tdmsfile( );
 
-    channel * operator[](const std::string& key );
-    channel * find_or_make_channel( const std::string& key );
+      TDMS_EXPORT channel * operator[](const std::string& key );
+      TDMS_EXPORT channel *  find_or_make_channel( const std::string& key );
 
-    const size_t segments( ) const {
+      TDMS_EXPORT const size_t segments( ) const {
       return _segments.size( );
     }
 
-    void loadSegment( size_t segnum, listener * );
+      TDMS_EXPORT void loadSegment( size_t segnum, listener * );
 
     class iterator {
       friend class tdmsfile;
     public:
 
-      channel * operator*( ) {
+        TDMS_EXPORT channel * operator*( ) {
         return _it->second.get( );
       }
 
-      const iterator& operator++( ) {
+        TDMS_EXPORT const iterator& operator++( ) {
         ++_it;
 
         return *this;
       }
 
-      bool operator!=(const iterator& other ) {
+        TDMS_EXPORT bool operator!=(const iterator& other ) {
         return other._it != _it;
       }
     private:

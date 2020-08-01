@@ -241,9 +241,9 @@ namespace TDMS{
       return;
     }
 
-    endianness e = endianness::LITTLE;
+    auto e = endianness::LITTLE;
     if ( this->_toc["kTocBigEndian"] ) {
-      e = BIG;
+      e = endianness::BIG;
       throw std::runtime_error( "Big endian reading not yet implemented" );
     }
 

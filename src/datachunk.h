@@ -22,17 +22,17 @@ namespace TDMS {
   class segment;
   class channel;
 
-  enum endianness {
+  enum class endianness {
     BIG,
     LITTLE
   };
 
-  class TDMS_EXPORT datachunk {
+  class datachunk {
     friend class segment;
     friend class channel;
   public:
-    datachunk( const datachunk& o );
-    datachunk( channel * o = nullptr );
+    TDMS_EXPORT datachunk( const datachunk& o );
+    TDMS_EXPORT datachunk( channel * o = nullptr );
 
   private:
     const unsigned char* _parse_metadata( const unsigned char* data );

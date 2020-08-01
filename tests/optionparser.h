@@ -241,7 +241,7 @@ class Option;
  * In the case that no argument is provided for an option that takes an
  * optional argument, return codes @c ARG_OK and @c ARG_IGNORE are equivalent.
  */
-enum ArgStatus
+enum class ArgStatus
 {
   //! The option does not take an argument.
   ARG_NONE,
@@ -886,16 +886,16 @@ struct Arg
   //! @brief For options that don't take an argument: Returns ARG_NONE.
   static ArgStatus None(const Option&, bool)
   {
-    return ARG_NONE;
+    return ArgStatus::ARG_NONE;
   }
 
   //! @brief Returns ARG_OK if the argument is attached and ARG_IGNORE otherwise.
   static ArgStatus Optional(const Option& option, bool)
   {
     if (option.arg && option.name[option.namelen] != 0)
-      return ARG_OK;
+      return ArgStatus::ARG_OK;
     else
-      return ARG_IGNORE;
+      return ArgStatus::ARG_IGNORE;
   }
 };
 
@@ -1630,9 +1630,9 @@ inline bool Parser::workhorse(bool gnu, const Descriptor usage[], int numargs, c
         Option option(descriptor, param, optarg);
         switch (descriptor->check_arg(option, print_errors))
         {
-          case ARG_ILLEGAL:
+        case ArgStatus::ARG_ILLEGAL:
             return false; // fatal
-          case ARG_OK:
+          case ArgStatus::ARG_OK:
             // skip one element of the argument vector, if it's a separated argument
             if (optarg != 0 && have_more_args && optarg == args[1])
             {
@@ -1646,8 +1646,8 @@ inline bool Parser::workhorse(bool gnu, const Descriptor usage[], int numargs, c
             handle_short_options = false;
 
             break;
-          case ARG_IGNORE:
-          case ARG_NONE:
+          case ArgStatus::ARG_IGNORE:
+          case ArgStatus::ARG_NONE:
             option.arg = 0;
             break;
         }
