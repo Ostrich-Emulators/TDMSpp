@@ -75,8 +75,6 @@ namespace TDMS {
     size_t _length;
     size_t _ctype_length;
     void _init_default_array_reader( );
-
-  public:
     std::function<void (const unsigned char*, void*) > read_to;
     std::function<void (const unsigned char*, void*, size_t ) > read_array_to;
   };
