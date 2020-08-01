@@ -31,8 +31,7 @@ public:
       std::cout << "reading " << num_vals << " for channel: " << channelname << std::endl;
 
       if ( printdata ) {
-        std::vector<double> vals;
-        vals.reserve( num_vals );
+        auto vals = std::vector<double>(num_vals);
 
         //    std::cout << "\t";
         //    for( size_t i=0; i< num_vals; i++ ){
@@ -46,7 +45,7 @@ public:
         //
         //    }
 
-        memcpy( &vals[0], datablock, datatype.length() * num_vals );
+        memcpy( vals.data(), datablock, datatype.length() * num_vals );
 
         std::cout << channelname << std::endl;
         for ( size_t i = 0; i < num_vals; i++ ) {
@@ -82,9 +81,10 @@ int main( int argc, char** argv ) {
   for ( int i = 0; i < parse.nonOptionsCount( ); ++i ) {
     _filenames.push_back( parse.nonOption( i ) );
   }
-  for ( std::string filename : _filenames ) {
-    if ( _filenames.size( ) > 1 )
-      std::cout << filename << ":" << std::endl;
+  for (std::string filename : _filenames) {
+      if (_filenames.size() > 1) {
+          std::cout << filename << ":" << std::endl;
+      }
     TDMS::tdmsfile f( filename );
     std::cout << f.segments( ) << " segments parsed" << std::endl;
 
@@ -94,7 +94,7 @@ int main( int argc, char** argv ) {
         for ( auto p : o->get_properties( ) ) {
           TDMS::data_type_t valtype( p.second->data_type );
 
-          if ( valtype.name() == "tdsTypeString" ) {
+          if ( valtype.is_string() ) {
             std::cout << "  " << p.first << " (string): " << p.second->asString( ) << std::endl;
           }
           else if ( valtype.name() == "tdsTypeDoubleFloat" ) {
@@ -129,7 +129,6 @@ int main( int argc, char** argv ) {
     }
 
     for ( size_t i = 0; i < f.segments( ); i++ ) {
-      //std::cout << "loading segment " << i << std::endl;
       f.loadSegment( i, &listener );
     }
   }
