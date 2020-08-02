@@ -59,7 +59,7 @@ install (FILES
   src/log.hpp
   src/tdmspp.h
   src/tdms_channel.h
-  src/tdms_exceptons.h
+  src/tdms_exceptions.h
   src/tdms_file.hpp
   src/tdms_segment.hpp
   src/data_extraction.hpp
