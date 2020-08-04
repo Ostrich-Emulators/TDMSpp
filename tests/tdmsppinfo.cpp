@@ -5,6 +5,7 @@
 #include <tdmspp.h>
 #include "optionparser.h"
 
+#include <stdio.h>
 // Define options
 
 enum optionIndex{
@@ -102,12 +103,17 @@ int main( int argc, char** argv ) {
           }
           else if ( valtype.name() == "tdsTypeTimeStamp" ) {
             time_t timer = p.second->asUTCTimestamp( );
-            tm * pt = gmtime( &timer );
-
-            char buffer[80];
-            sprintf( buffer, "%d.%02d.%d %02d:%02d:%02d,%f",
-                pt->tm_mday, pt->tm_mon + 1, 1900 + pt->tm_year, pt->tm_hour, pt->tm_min, pt->tm_sec, 0.0 );
-            std::cout << "  " << p.first << " (timestamp): " << buffer << std::endl;
+            tm pt;
+            auto err = gmtime_s(&pt, &timer);
+            if (0==err) {
+                char buffer2[80];
+                sprintf_s(buffer2, sizeof(buffer2), "%d.%02d.%d %02d:%02d:%02d,%f",
+                    pt.tm_mday, pt.tm_mon + 1, 1900 + pt.tm_year, pt.tm_hour, pt.tm_min, pt.tm_sec, 0.0);
+                std::cout << "  " << p.first << " (timestamp): " << buffer2 << std::endl;
+            }
+            else {
+                std::cerr << "error parsing time property" << std::endl;
+            }
           }
           else {
             std::cout << "  " << p.first << "(" << valtype.name() << "): <unhandled>" << std::endl;

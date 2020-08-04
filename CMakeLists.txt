@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-set(LIBVERSION 2.0.0)
+set(LIBVERSION 2.1.0)
 project(tdmspp-osem VERSION ${LIBVERSION} LANGUAGES CXX)
 
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:$ORIGIN/../lib/tdmspp-osem-${LIBVERSION}:$ORIGIN/")

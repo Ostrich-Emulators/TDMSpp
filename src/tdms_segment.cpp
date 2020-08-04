@@ -80,7 +80,7 @@ namespace TDMS{
     if ( !ok ) {
       throw read_error( );
     }
-    uint64_t raw_data_offset = read_le<uint64_t>( (const unsigned char *) &justread[0] );
+    long raw_data_offset = read_le<long>( (const unsigned char *) &justread[0] );
 
     // we'll add 4+4+4+8+8 = 28 bytes to our offsets
     // because we've read 28 bytes from the start of the segment

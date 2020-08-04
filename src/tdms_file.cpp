@@ -15,8 +15,9 @@ namespace TDMS{
   typedef unsigned long long uulong;
 
   tdmsfile::tdmsfile( const std::string& filename ) : filename( filename ) {
-    f = fopen( filename.c_str( ), "rb" );
-    if ( !f ) {
+
+    auto err = fopen_s( &f, filename.c_str( ), "rb" );
+    if ( err!=0 ) {
       throw std::runtime_error( "File \"" + filename + "\" could not be opened" );
     }
     fseek( f, 0, SEEK_END );
@@ -46,7 +47,7 @@ namespace TDMS{
         offset += s->_next_segment_offset;
         _segments.push_back( std::move( s ) );
       }
-      catch ( no_segment_error& e ) {
+      catch ( no_segment_error& ) {
         // Last segment was parsed.
         break;
       }

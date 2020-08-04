@@ -12,7 +12,7 @@
 
 namespace TDMS{
 
-  size_t datachunk::_read_values( const unsigned char*& data, endianness e, listener * earful ) {
+  size_t datachunk::_read_values( const unsigned char*& data, endianness, listener * earful ) {
     if ( _data_type.is_string( ) ) {
       throw std::runtime_error( "Reading string data not yet implemented" );
       // TODO ^
@@ -74,7 +74,7 @@ namespace TDMS{
       try {
         _data_type = data_type_t::_tds_datatypes.at( datatype );
       }
-      catch ( std::out_of_range& e ) {
+      catch ( std::out_of_range& ) {
         throw std::out_of_range( "Unrecognized datatype in file" );
       }
       if ( _tdms_channel->_data_type.is_valid( ) && _tdms_channel->_data_type != _data_type ) {
