@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <algorithm>
 #include <map>
+#include <stdio.h>
 
 #include "tdms_file.hpp"
 #include "log.hpp"
@@ -16,8 +17,8 @@ namespace TDMS{
 
   tdmsfile::tdmsfile( const std::string& filename ) : filename( filename ) {
 
-    auto err = fopen_s( &f, filename.c_str( ), "rb" );
-    if ( err!=0 ) {
+    f = fopen( filename.c_str( ), "rb" );
+    if ( nullptr == f ) {
       throw std::runtime_error( "File \"" + filename + "\" could not be opened" );
     }
     fseek( f, 0, SEEK_END );
@@ -25,11 +26,11 @@ namespace TDMS{
     fseek( f, 0, SEEK_SET );
 
     // Now parse the segments
-    _parse_segments();
+    _parse_segments( );
     file_contents_size = 0;
   }
 
-  void tdmsfile::_parse_segments() {
+  void tdmsfile::_parse_segments( ) {
     uulong offset = 0;
     size_t maxsegmentsize = 0;
     // First read the metadata of the segments
@@ -37,7 +38,7 @@ namespace TDMS{
       try {
         auto prev = ( _segments.empty( )
             ? nullptr
-            : _segments[_segments.size( ) - 1].get() );
+            : _segments[_segments.size( ) - 1].get( ) );
 
         log::debug( ) << "parsing segment " << ( _segments.size( ) + 1 ) << " from offset: " << offset << std::endl;
         std::unique_ptr<segment> s( new segment( offset, prev, this ) );
@@ -84,7 +85,7 @@ namespace TDMS{
       log::debug( ) << "DOUBLE FREE" << std::endl;
       return;
     }
-    if ( data_type.is_string() ) {
+    if ( data_type.is_string( ) ) {
       delete (std::string* ) value;
     }
     else {

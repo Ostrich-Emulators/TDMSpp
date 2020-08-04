@@ -32,7 +32,7 @@ public:
       std::cout << "reading " << num_vals << " for channel: " << channelname << std::endl;
 
       if ( printdata ) {
-        auto vals = std::vector<double>(num_vals);
+        auto vals = std::vector<double>( num_vals );
 
         //    std::cout << "\t";
         //    for( size_t i=0; i< num_vals; i++ ){
@@ -46,7 +46,7 @@ public:
         //
         //    }
 
-        memcpy( vals.data(), datablock, datatype.length() * num_vals );
+        memcpy( vals.data( ), datablock, datatype.length( ) * num_vals );
 
         std::cout << channelname << std::endl;
         for ( size_t i = 0; i < num_vals; i++ ) {
@@ -62,9 +62,9 @@ int main( int argc, char** argv ) {
   argc -= ( argc > 0 );
   argv += ( argc > 0 ); // Skip the program name if present
   option::Stats stats( usage, argc, argv );
-  auto options = std::vector<option::Option>( stats.options_max);
-  auto buffer =  std::vector<option::Option>( stats.buffer_max);
-  option::Parser parse( usage, argc, argv, options.data(), buffer.data() );
+  auto options = std::vector<option::Option>( stats.options_max );
+  auto buffer = std::vector<option::Option>( stats.buffer_max );
+  option::Parser parse( usage, argc, argv, options.data( ), buffer.data( ) );
 
   if ( parse.error( ) ) {
     std::cerr << "parse.error() != 0" << std::endl;
@@ -82,10 +82,10 @@ int main( int argc, char** argv ) {
   for ( int i = 0; i < parse.nonOptionsCount( ); ++i ) {
     _filenames.push_back( parse.nonOption( i ) );
   }
-  for (std::string filename : _filenames) {
-      if (_filenames.size() > 1) {
-          std::cout << filename << ":" << std::endl;
-      }
+  for ( std::string filename : _filenames ) {
+    if ( _filenames.size( ) > 1 ) {
+      std::cout << filename << ":" << std::endl;
+    }
     TDMS::tdmsfile f( filename );
     std::cout << f.segments( ) << " segments parsed" << std::endl;
 
@@ -95,28 +95,27 @@ int main( int argc, char** argv ) {
         for ( auto p : o->get_properties( ) ) {
           TDMS::data_type_t valtype( p.second->data_type );
 
-          if ( valtype.is_string() ) {
+          if ( valtype.is_string( ) ) {
             std::cout << "  " << p.first << " (string): " << p.second->asString( ) << std::endl;
           }
-          else if ( valtype.name() == "tdsTypeDoubleFloat" ) {
+          else if ( valtype.name( ) == "tdsTypeDoubleFloat" ) {
             std::cout << "  " << p.first << " (double): " << p.second->asDouble( ) << std::endl;
           }
-          else if ( valtype.name() == "tdsTypeTimeStamp" ) {
+          else if ( valtype.name( ) == "tdsTypeTimeStamp" ) {
             time_t timer = p.second->asUTCTimestamp( );
-            tm pt;
-            auto err = gmtime_s(&pt, &timer);
-            if (0==err) {
-                char buffer2[80];
-                sprintf_s(buffer2, sizeof(buffer2), "%d.%02d.%d %02d:%02d:%02d,%f",
-                    pt.tm_mday, pt.tm_mon + 1, 1900 + pt.tm_year, pt.tm_hour, pt.tm_min, pt.tm_sec, 0.0);
-                std::cout << "  " << p.first << " (timestamp): " << buffer2 << std::endl;
+            tm * pt = gmtime( &timer );
+            if ( nullptr == pt ) {
+              std::cerr << "error parsing time property" << std::endl;
             }
             else {
-                std::cerr << "error parsing time property" << std::endl;
+              char buffer2[80];
+              sprintf( buffer2, "%d.%02d.%d %02d:%02d:%02d,%f",
+                  pt->tm_mday, pt->tm_mon + 1, 1900 + pt->tm_year, pt->tm_hour, pt->tm_min, pt->tm_sec, 0.0 );
+              std::cout << "  " << p.first << " (timestamp): " << buffer2 << std::endl;
             }
           }
           else {
-            std::cout << "  " << p.first << "(" << valtype.name() << "): <unhandled>" << std::endl;
+            std::cout << "  " << p.first << "(" << valtype.name( ) << "): <unhandled>" << std::endl;
           }
         }
       }
