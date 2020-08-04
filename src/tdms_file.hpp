@@ -8,7 +8,7 @@
 #include <memory>
 #include "log.hpp"
 
-#include "exports.h"
+#include "tdms_exports.h"
 #include "tdms_segment.hpp"
 
 namespace TDMS {

@@ -14,7 +14,7 @@
 #ifndef DATA_TYPE_H
 #define DATA_TYPE_H
 
-#include "exports.h"
+#include "tdms_exports.h"
 #include <functional>
 #include <map>
 

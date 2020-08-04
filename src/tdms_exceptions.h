@@ -14,7 +14,7 @@
 #ifndef TDMS_EXCEPTIONS_H
 #define TDMS_EXCEPTIONS_H
 
-#include "exports.h"
+#include "tdms_exports.h"
 
 namespace TDMS {
 

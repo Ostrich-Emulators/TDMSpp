@@ -15,7 +15,7 @@
 #define DATACHUNK_H
 
 #include "data_type.h"
-#include "exports.h"
+#include "tdms_exports.h"
 #include "tdms_listener.h"
 
 namespace TDMS {

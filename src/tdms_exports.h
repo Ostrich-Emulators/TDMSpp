@@ -11,8 +11,8 @@
  * Created on August 1, 2020, 8:04 AM
  */
 
-#ifndef EXPORTS_H
-#define EXPORTS_H
+#ifndef TDMS_EXPORTS_H
+#define TDMS_EXPORTS_H
 
 
 #if defined(_WIN32) || defined(_Win64)
@@ -21,5 +21,5 @@
 #define TDMS_EXPORT
 #endif
 
-#endif /* EXPORTS_H */
+#endif /* TDMS_EXPORTS_H */
 

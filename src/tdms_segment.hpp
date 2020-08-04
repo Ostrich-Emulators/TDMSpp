@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "data_type.h"
-#include "exports.h"
+#include "tdms_exports.h"
 #include "datachunk.h"
 
 namespace TDMS {

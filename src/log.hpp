@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "exports.h"
+#include "tdms_exports.h"
 
 namespace TDMS {
 

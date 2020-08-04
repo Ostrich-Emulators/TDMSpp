@@ -56,6 +56,7 @@ install (FILES
   src/data_type.h
   src/tdms_listener.h
   src/datachunk.h
+  src/tdms_exports.h
   src/log.hpp
   src/tdmspp.h
   src/tdms_channel.h

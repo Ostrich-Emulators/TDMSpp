@@ -14,7 +14,7 @@
 #ifndef CHANNEL_H
 #define CHANNEL_H
 
-#include "exports.h"
+#include "tdms_exports.h"
 #include "data_type.h"
 #include "datachunk.h"
 #include <memory>
